@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+import { Checkbox } from "@/components/ui/checkbox"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -26,7 +28,8 @@ import {
     X,
     Eye,
     Edit,
-    Trash2
+    Trash2,
+    ChevronDown
 } from "lucide-react"
 import { TASK_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from "@/types/task/task.types"
 import { useTaskManagementController } from "./task-management.controller"
@@ -124,76 +127,213 @@ export default function TaskManagement() {
                         {/* Status Filter */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Status</label>
-                            <Select
-                                value={filters.status[0] || "all"}
-                                onValueChange={(value) => handlers.onStatusFilter(value === "all" ? [] : [value])}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All Statuses" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Statuses</SelectItem>
-                                    {TASK_STATUS_OPTIONS.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between"
+                                    >
+                                        {filters.status.length === 0
+                                            ? "All Statuses"
+                                            : filters.status.length === 1
+                                                ? filters.status[0]
+                                                : `${filters.status.length} selected`
+                                        }
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0" align="start">
+                                    <div className="p-2">
+                                        <div className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                            <Checkbox
+                                                id="status-all"
+                                                checked={filters.status.length === 0}
+                                                onCheckedChange={() => handlers.onStatusFilter([])}
+                                            />
+                                            <label htmlFor="status-all" className="text-sm font-medium cursor-pointer">
+                                                All Statuses
+                                            </label>
+                                        </div>
+                                        {TASK_STATUS_OPTIONS.map((option) => (
+                                            <div key={option.value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                                <Checkbox
+                                                    id={`status-${option.value}`}
+                                                    checked={filters.status.includes(option.value)}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            handlers.onStatusFilter([...filters.status, option.value])
+                                                        } else {
+                                                            handlers.onStatusFilter(filters.status.filter(s => s !== option.value))
+                                                        }
+                                                    }}
+                                                />
+                                                <label htmlFor={`status-${option.value}`} className="text-sm cursor-pointer">
+                                                    {option.label}
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
                         </div>
 
                         {/* Priority Filter */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Priority</label>
-                            <Select
-                                value={filters.priority[0] || "all"}
-                                onValueChange={(value) => handlers.onPriorityFilter(value === "all" ? [] : [value])}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All Priorities" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Priorities</SelectItem>
-                                    {TASK_PRIORITY_OPTIONS.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between"
+                                    >
+                                        {filters.priority.length === 0
+                                            ? "All Priorities"
+                                            : filters.priority.length === 1
+                                                ? filters.priority[0]
+                                                : `${filters.priority.length} selected`
+                                        }
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0" align="start">
+                                    <div className="p-2">
+                                        <div className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                            <Checkbox
+                                                id="priority-all"
+                                                checked={filters.priority.length === 0}
+                                                onCheckedChange={() => handlers.onPriorityFilter([])}
+                                            />
+                                            <label htmlFor="priority-all" className="text-sm font-medium cursor-pointer">
+                                                All Priorities
+                                            </label>
+                                        </div>
+                                        {TASK_PRIORITY_OPTIONS.map((option) => (
+                                            <div key={option.value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                                <Checkbox
+                                                    id={`priority-${option.value}`}
+                                                    checked={filters.priority.includes(option.value)}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            handlers.onPriorityFilter([...filters.priority, option.value])
+                                                        } else {
+                                                            handlers.onPriorityFilter(filters.priority.filter(p => p !== option.value))
+                                                        }
+                                                    }}
+                                                />
+                                                <label htmlFor={`priority-${option.value}`} className="text-sm cursor-pointer">
+                                                    {option.label}
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
                         </div>
 
                         {/* Type Filter */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Type</label>
-                            <Select
-                                value={filters.type[0] || "all"}
-                                onValueChange={(value) => handlers.onTypeFilter(value === "all" ? [] : [value])}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All Types" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Types</SelectItem>
-                                    {TASK_TYPE_OPTIONS.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between"
+                                    >
+                                        {filters.type.length === 0
+                                            ? "All Types"
+                                            : filters.type.length === 1
+                                                ? filters.type[0]
+                                                : `${filters.type.length} selected`
+                                        }
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0" align="start">
+                                    <div className="p-2">
+                                        <div className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                            <Checkbox
+                                                id="type-all"
+                                                checked={filters.type.length === 0}
+                                                onCheckedChange={() => handlers.onTypeFilter([])}
+                                            />
+                                            <label htmlFor="type-all" className="text-sm font-medium cursor-pointer">
+                                                All Types
+                                            </label>
+                                        </div>
+                                        {TASK_TYPE_OPTIONS.map((option) => (
+                                            <div key={option.value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                                <Checkbox
+                                                    id={`type-${option.value}`}
+                                                    checked={filters.type.includes(option.value)}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            handlers.onTypeFilter([...filters.type, option.value])
+                                                        } else {
+                                                            handlers.onTypeFilter(filters.type.filter(t => t !== option.value))
+                                                        }
+                                                    }}
+                                                />
+                                                <label htmlFor={`type-${option.value}`} className="text-sm cursor-pointer">
+                                                    {option.label}
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
                         </div>
                     </div>
 
-                    {/* Clear Filters */}
+                    {/* Active Filters Summary */}
                     {(filters.search ||
                         filters.status.length > 0 ||
                         filters.priority.length > 0 ||
                         filters.type.length > 0) && (
-                            <div className="mt-4">
-                                <Button variant="outline" onClick={handlers.onClearFilters}>
-                                    Clear Filters
-                                </Button>
+                            <div className="mt-4 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium">Active Filters:</span>
+                                    <Button variant="outline" size="sm" onClick={handlers.onClearFilters}>
+                                        Clear All
+                                    </Button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {filters.search && (
+                                        <Badge variant="secondary" className="flex items-center gap-1">
+                                            Search: "{filters.search}"
+                                            <X
+                                                className="h-3 w-3 cursor-pointer"
+                                                onClick={() => handlers.onSearchChange('')}
+                                            />
+                                        </Badge>
+                                    )}
+                                    {filters.status.map(status => (
+                                        <Badge key={status} variant="secondary" className="flex items-center gap-1">
+                                            Status: {status}
+                                            <X
+                                                className="h-3 w-3 cursor-pointer"
+                                                onClick={() => handlers.onStatusFilter(filters.status.filter(s => s !== status))}
+                                            />
+                                        </Badge>
+                                    ))}
+                                    {filters.priority.map(priority => (
+                                        <Badge key={priority} variant="secondary" className="flex items-center gap-1">
+                                            Priority: {priority}
+                                            <X
+                                                className="h-3 w-3 cursor-pointer"
+                                                onClick={() => handlers.onPriorityFilter(filters.priority.filter(p => p !== priority))}
+                                            />
+                                        </Badge>
+                                    ))}
+                                    {filters.type.map(type => (
+                                        <Badge key={type} variant="secondary" className="flex items-center gap-1">
+                                            Type: {type}
+                                            <X
+                                                className="h-3 w-3 cursor-pointer"
+                                                onClick={() => handlers.onTypeFilter(filters.type.filter(t => t !== type))}
+                                            />
+                                        </Badge>
+                                    ))}
+                                </div>
                             </div>
                         )}
                 </CardContent>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { toast } from "sonner"
@@ -48,6 +48,9 @@ export const useTaskManagementController = (): TaskManagementControllerResponse 
   const dispatch = useAppDispatch()
   const { tasks, loading, error, pagination, filters, isInitialized } = useAppSelector((state) => state.tasks)
 
+  // Debounce timer ref for search
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   // Load tasks only once when component mounts
   useEffect(() => {
     if (!isInitialized && !loading) {
@@ -59,6 +62,15 @@ export const useTaskManagementController = (): TaskManagementControllerResponse 
       }))
     }
   }, [dispatch, isInitialized, loading])
+
+  // Cleanup search timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Create task handler
   const handleCreateTask = useCallback(() => {
@@ -87,26 +99,89 @@ export const useTaskManagementController = (): TaskManagementControllerResponse 
     navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW.replace(":id", task.id))
   }, [navigate])
 
-  // Filter handlers
+  // Filter handlers with automatic data refresh
   const handleSearchChange = useCallback((search: string) => {
     dispatch(setFilters({ search }))
-  }, [dispatch])
+
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+
+    // Debounce search API call by 500ms
+    searchTimeoutRef.current = setTimeout(() => {
+      dispatch(getAllTasks({
+        page: 1, // Reset to first page when searching
+        limit: pagination?.limit || 10,
+        search: search || undefined,
+        status: filters.status.length > 0 ? filters.status as any : undefined,
+        priority: filters.priority.length > 0 ? filters.priority as any : undefined,
+        type: filters.type.length > 0 ? filters.type as any : undefined,
+        assignedTo: filters.assignedTo || undefined,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      }))
+    }, 500)
+  }, [dispatch, pagination?.limit, filters])
 
   const handleStatusFilter = useCallback((statuses: string[]) => {
     dispatch(setFilters({ status: statuses }))
-  }, [dispatch])
+    // Trigger new API call with updated filters
+    dispatch(getAllTasks({
+      page: 1, // Reset to first page when filtering
+      limit: pagination?.limit || 10,
+      search: filters.search || undefined,
+      status: statuses.length > 0 ? statuses as any : undefined,
+      priority: filters.priority.length > 0 ? filters.priority as any : undefined,
+      type: filters.type.length > 0 ? filters.type as any : undefined,
+      assignedTo: filters.assignedTo || undefined,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    }))
+  }, [dispatch, pagination?.limit, filters])
 
   const handlePriorityFilter = useCallback((priorities: string[]) => {
     dispatch(setFilters({ priority: priorities }))
-  }, [dispatch])
+    // Trigger new API call with updated filters
+    dispatch(getAllTasks({
+      page: 1, // Reset to first page when filtering
+      limit: pagination?.limit || 10,
+      search: filters.search || undefined,
+      status: filters.status.length > 0 ? filters.status as any : undefined,
+      priority: priorities.length > 0 ? priorities as any : undefined,
+      type: filters.type.length > 0 ? filters.type as any : undefined,
+      assignedTo: filters.assignedTo || undefined,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    }))
+  }, [dispatch, pagination?.limit, filters])
 
   const handleTypeFilter = useCallback((types: string[]) => {
     dispatch(setFilters({ type: types }))
-  }, [dispatch])
+    // Trigger new API call with updated filters
+    dispatch(getAllTasks({
+      page: 1, // Reset to first page when filtering
+      limit: pagination?.limit || 10,
+      search: filters.search || undefined,
+      status: filters.status.length > 0 ? filters.status as any : undefined,
+      priority: filters.priority.length > 0 ? filters.priority as any : undefined,
+      type: types.length > 0 ? types as any : undefined,
+      assignedTo: filters.assignedTo || undefined,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    }))
+  }, [dispatch, pagination?.limit, filters])
 
   const handleClearFilters = useCallback(() => {
     dispatch(clearFilters())
-  }, [dispatch])
+    // Trigger new API call with cleared filters
+    dispatch(getAllTasks({
+      page: 1,
+      limit: pagination?.limit || 10,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    }))
+  }, [dispatch, pagination?.limit])
 
   const handlePageChange = useCallback((page: number) => {
     dispatch(getAllTasks({
