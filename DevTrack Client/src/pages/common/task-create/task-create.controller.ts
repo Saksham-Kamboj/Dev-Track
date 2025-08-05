@@ -4,6 +4,7 @@ import { useAppDispatch } from "@/redux/hooks"
 import { toast } from "sonner"
 import { createTask } from "@/redux/thunks/task.thunks"
 import type { TaskFormData } from "@/types/task/task.types"
+import { PAGE_ROUTES } from "@/constants"
 
 interface TaskCreateControllerResponse {
   getters: {
@@ -93,7 +94,7 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
       
       if (createTask.fulfilled.match(result)) {
         toast.success("Task created successfully!")
-        navigate("/task-management")
+        navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
       } else {
         toast.error("Failed to create task")
       }
@@ -105,7 +106,7 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
   }, [formData, dueDate, dispatch, navigate])
 
   const handleCancel = useCallback(() => {
-    navigate("/task-management")
+    navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
   }, [navigate])
 
   return {
