@@ -10,12 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, X, ArrowLeft, Save, Plus, Loader2 } from "lucide-react"
+import { CalendarIcon, X, Save, Plus, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import { toast } from "sonner"
 import { getTaskById, updateTask } from "@/redux/thunks/task.thunks"
 import { TASK_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from "@/types/task/task.types"
 import type { TaskFormData } from "@/types/task/task.types"
+import { PAGE_ROUTES } from "@/constants"
 
 export default function TaskEdit() {
   const navigate = useNavigate()
@@ -113,7 +114,7 @@ export default function TaskEdit() {
 
       if (updateTask.fulfilled.match(result)) {
         toast.success("Task updated successfully!")
-        navigate("/task-management")
+        navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW)
       } else {
         toast.error("Failed to update task")
       }
@@ -140,7 +141,7 @@ export default function TaskEdit() {
       <div className="container mx-auto py-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Task Not Found</h1>
-          <Button onClick={() => navigate("/task-management")}>
+          <Button onClick={() => navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)}>
             Back to Tasks
           </Button>
         </div>
@@ -151,22 +152,11 @@ export default function TaskEdit() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/task-management")}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Edit Task</h1>
-          <p className="text-muted-foreground">
-            Update task: {currentTask.taskId}
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Edit Task</h1>
+        <p className="text-muted-foreground">
+          Update task: {currentTask.taskId}
+        </p>
       </div>
 
       {/* Form */}
@@ -250,15 +240,15 @@ export default function TaskEdit() {
               <CardHeader>
                 <CardTitle>Task Properties</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 space-x-2 grid grid-cols-12">
                 {/* Status */}
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-6">
                   <Label>Status</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value) => handleInputChange("status", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -272,13 +262,13 @@ export default function TaskEdit() {
                 </div>
 
                 {/* Priority */}
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-6">
                   <Label>Priority</Label>
                   <Select
                     value={formData.priority}
                     onValueChange={(value) => handleInputChange("priority", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -292,13 +282,13 @@ export default function TaskEdit() {
                 </div>
 
                 {/* Type */}
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-6">
                   <Label>Type</Label>
                   <Select
                     value={formData.type}
                     onValueChange={(value) => handleInputChange("type", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -311,8 +301,22 @@ export default function TaskEdit() {
                   </Select>
                 </div>
 
+                {/* Estimated Hours */}
+                <div className="space-y-2 col-span-6">
+                  <Label htmlFor="estimatedHours">Estimated Hours</Label>
+                  <Input
+                    id="estimatedHours"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    placeholder="0"
+                    value={formData.estimatedHours || ""}
+                    onChange={(e) => handleInputChange("estimatedHours", e.target.value ? Number(e.target.value) : undefined)}
+                  />
+                </div>
+
                 {/* Due Date */}
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-12">
                   <Label>Due Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -334,20 +338,6 @@ export default function TaskEdit() {
                     </PopoverContent>
                   </Popover>
                 </div>
-
-                {/* Estimated Hours */}
-                <div className="space-y-2">
-                  <Label htmlFor="estimatedHours">Estimated Hours</Label>
-                  <Input
-                    id="estimatedHours"
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    placeholder="0"
-                    value={formData.estimatedHours || ""}
-                    onChange={(e) => handleInputChange("estimatedHours", e.target.value ? Number(e.target.value) : undefined)}
-                  />
-                </div>
               </CardContent>
             </Card>
 
@@ -366,7 +356,7 @@ export default function TaskEdit() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate("/task-management")}
+                    onClick={() => navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW)}
                     className="w-full"
                   >
                     Cancel

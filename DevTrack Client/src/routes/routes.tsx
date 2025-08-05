@@ -52,11 +52,15 @@ const TaskManagement = lazy(() =>
 );
 
 const TaskCreate = lazy(() =>
-  import(/* webpackChunkName: "task-create" */ "@/pages/common/task-create/task-create")
+  import(/* webpackChunkName: "task-create" */ "@/pages/common/task-management/task-create/task-create")
 );
 
 const TaskEdit = lazy(() =>
-  import(/* webpackChunkName: "task-edit" */ "@/pages/common/task-edit/task-edit")
+  import(/* webpackChunkName: "task-edit" */ "@/pages/common/task-management/task-edit/task-edit")
+);
+
+const TaskView = lazy(() =>
+  import(/* webpackChunkName: "task-view" */ "@/pages/common/task-view/task-view")
 );
 
 // Profile pages - shared across roles
@@ -132,6 +136,26 @@ const createAdminRoutes = () => [
     path={PAGE_ROUTES.ADMIN.EDIT_PROFILE}
     element={createProtectedRoute(EditProfile)}
   />,
+  <Route
+    key="admin-task-management"
+    path="/task-management"
+    element={createProtectedRoute(TaskManagement)}
+  />,
+  <Route
+    key="admin-task-create"
+    path="/tasks/create"
+    element={createProtectedRoute(TaskCreate)}
+  />,
+  <Route
+    key="admin-task-edit"
+    path="/tasks/edit/:id"
+    element={createProtectedRoute(TaskEdit)}
+  />,
+  <Route
+    key="admin-task-view"
+    path="/tasks/:id"
+    element={createProtectedRoute(TaskView)}
+  />,
   ...createCommonRoutes(),
 ];
 
@@ -156,6 +180,11 @@ const createDeveloperRoutes = () => [
     key="task-edit"
     path="/tasks/edit/:id"
     element={createProtectedRoute(TaskEdit)}
+  />,
+  <Route
+    key="task-view"
+    path="/tasks/:id"
+    element={createProtectedRoute(TaskView)}
   />,
   <Route
     key="developer-profile"

@@ -5,6 +5,13 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu"
+import {
     Plus,
     Search,
     Filter,
@@ -16,7 +23,10 @@ import {
     CheckCircle2,
     Circle,
     Pause,
-    X
+    X,
+    Eye,
+    Edit,
+    Trash2
 } from "lucide-react"
 import { TASK_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from "@/types/task/task.types"
 import { useTaskManagementController } from "./task-management.controller"
@@ -247,9 +257,35 @@ export default function TaskManagement() {
                                             </span>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" size="sm">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="sm">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handlers.onViewTask(task)}>
+                                                <Eye className="mr-2 h-4 w-4" />
+                                                View
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handlers.onEditTask(task)}>
+                                                <Edit className="mr-2 h-4 w-4" />
+                                                Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem
+                                                onClick={() => {
+                                                    if (window.confirm(`Are you sure you want to delete "${task.title}"? This action cannot be undone.`)) {
+                                                        handlers.onDeleteTask(task.id)
+                                                    }
+                                                }}
+                                                className="text-red-600 focus:text-red-600"
+                                            >
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
