@@ -42,7 +42,7 @@ import { PAGE_ROUTES } from "@/constants"
  */
 export default function TaskManagement() {
     const { getters, handlers } = useTaskManagementController()
-    const { title, description, tasks, loading, pagination, filters } = getters
+    const { title, description, tasks, pagination, filters } = getters
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -349,23 +349,7 @@ export default function TaskManagement() {
 
             {/* Tasks Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {loading ? (
-                    // Loading skeleton
-                    Array.from({ length: 6 }).map((_, index) => (
-                        <Card key={index} className="animate-pulse">
-                            <CardHeader>
-                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-2">
-                                    <div className="h-3 bg-gray-200 rounded"></div>
-                                    <div className="h-3 bg-gray-200 rounded w-5/6"></div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))
-                ) : tasks.length === 0 ? (
+                {tasks.length === 0 ? (
                     // Empty state
                     <div className="col-span-full">
                         <Card>
