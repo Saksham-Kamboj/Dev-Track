@@ -37,6 +37,7 @@ import { useTaskManagementController } from "./task-management.controller"
  */
 export default function TaskManagement() {
     const { getters, handlers } = useTaskManagementController()
+    const { title, description, tasks, loading, pagination, filters } = getters
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -85,9 +86,9 @@ export default function TaskManagement() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Task Management</h1>
+                    <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
                     <p className="text-muted-foreground">
-                        Manage and track your development tasks
+                        {description}
                     </p>
                 </div>
                 <Button onClick={handlers.onCreateTask} className="flex items-center gap-2">
@@ -113,7 +114,7 @@ export default function TaskManagement() {
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Search tasks..."
-                                    value={getters.filters.search}
+                                    value={filters.search}
                                     onChange={(e) => handlers.onSearchChange(e.target.value)}
                                     className="pl-10"
                                 />
@@ -124,7 +125,7 @@ export default function TaskManagement() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Status</label>
                             <Select
-                                value={getters.filters.status[0] || "all"}
+                                value={filters.status[0] || "all"}
                                 onValueChange={(value) => handlers.onStatusFilter(value === "all" ? [] : [value])}
                             >
                                 <SelectTrigger>
@@ -145,7 +146,7 @@ export default function TaskManagement() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Priority</label>
                             <Select
-                                value={getters.filters.priority[0] || "all"}
+                                value={filters.priority[0] || "all"}
                                 onValueChange={(value) => handlers.onPriorityFilter(value === "all" ? [] : [value])}
                             >
                                 <SelectTrigger>
@@ -166,7 +167,7 @@ export default function TaskManagement() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Type</label>
                             <Select
-                                value={getters.filters.type[0] || "all"}
+                                value={filters.type[0] || "all"}
                                 onValueChange={(value) => handlers.onTypeFilter(value === "all" ? [] : [value])}
                             >
                                 <SelectTrigger>
@@ -185,10 +186,10 @@ export default function TaskManagement() {
                     </div>
 
                     {/* Clear Filters */}
-                    {(getters.filters.search ||
-                        getters.filters.status.length > 0 ||
-                        getters.filters.priority.length > 0 ||
-                        getters.filters.type.length > 0) && (
+                    {(filters.search ||
+                        filters.status.length > 0 ||
+                        filters.priority.length > 0 ||
+                        filters.type.length > 0) && (
                             <div className="mt-4">
                                 <Button variant="outline" onClick={handlers.onClearFilters}>
                                     Clear Filters
@@ -200,7 +201,7 @@ export default function TaskManagement() {
 
             {/* Tasks Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {getters.loading ? (
+                {loading ? (
                     // Loading skeleton
                     Array.from({ length: 6 }).map((_, index) => (
                         <Card key={index} className="animate-pulse">
@@ -216,7 +217,7 @@ export default function TaskManagement() {
                             </CardContent>
                         </Card>
                     ))
-                ) : getters.tasks.length === 0 ? (
+                ) : tasks.length === 0 ? (
                     // Empty state
                     <div className="col-span-full">
                         <Card>
@@ -224,10 +225,10 @@ export default function TaskManagement() {
                                 <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
                                 <h3 className="text-lg font-semibold mb-2">No tasks found</h3>
                                 <p className="text-muted-foreground text-center mb-4">
-                                    {getters.filters.search ||
-                                        getters.filters.status.length > 0 ||
-                                        getters.filters.priority.length > 0 ||
-                                        getters.filters.type.length > 0
+                                    {filters.search ||
+                                        filters.status.length > 0 ||
+                                        filters.priority.length > 0 ||
+                                        filters.type.length > 0
                                         ? "No tasks match your current filters. Try adjusting your search criteria."
                                         : "Get started by creating your first task."}
                                 </p>
@@ -240,7 +241,7 @@ export default function TaskManagement() {
                     </div>
                 ) : (
                     // Tasks list
-                    getters.tasks.map((task) => (
+                    tasks.map((task) => (
                         <Card key={task.id} className="hover:shadow-md transition-shadow cursor-pointer">
                             <CardHeader className="pb-3">
                                 <div className="flex items-start justify-between">
@@ -332,22 +333,22 @@ export default function TaskManagement() {
             </div>
 
             {/* Pagination */}
-            {getters.pagination && getters.pagination.pages > 1 && (
+            {pagination && pagination.pages > 1 && (
                 <div className="flex items-center justify-center space-x-2">
                     <Button
                         variant="outline"
-                        onClick={() => handlers.onPageChange(getters.pagination!.page - 1)}
-                        disabled={getters.pagination.page <= 1}
+                        onClick={() => handlers.onPageChange(pagination!.page - 1)}
+                        disabled={pagination!.page <= 1}
                     >
                         Previous
                     </Button>
                     <span className="text-sm text-muted-foreground">
-                        Page {getters.pagination.page} of {getters.pagination.pages}
+                        Page {pagination!.page} of {pagination!.pages}
                     </span>
                     <Button
                         variant="outline"
-                        onClick={() => handlers.onPageChange(getters.pagination!.page + 1)}
-                        disabled={getters.pagination.page >= getters.pagination.pages}
+                        onClick={() => handlers.onPageChange(pagination!.page + 1)}
+                        disabled={pagination!.page >= pagination!.pages}
                     >
                         Next
                     </Button>

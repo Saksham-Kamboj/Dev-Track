@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, X, Save, Plus, Loader2, RotateCcw } from "lucide-react"
 import { format } from "date-fns"
 import { TASK_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from "@/types/task/task.types"
+import { PAGE_TEXTS } from "@/constants"
 import { useTaskCreateController } from "./task-create.controller"
 
 export default function TaskCreate() {
@@ -21,9 +22,9 @@ export default function TaskCreate() {
     <div className="container mx-auto py-2 space-y-3">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Create New Task</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{PAGE_TEXTS.TASK_CREATE.TITLE}</h1>
         <p className="text-muted-foreground">
-          Add a new task to your project
+          {PAGE_TEXTS.TASK_CREATE.DESCRIPTION}
         </p>
       </div>
 

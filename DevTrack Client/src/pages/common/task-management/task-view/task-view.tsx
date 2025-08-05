@@ -1,6 +1,3 @@
-import { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,83 +7,61 @@ import {
     Clock,
     User,
     Edit,
-    CheckCircle2,
+    AlertCircle,
+    Trash2,
+    Copy,
     Circle,
-    Pause,
-    X,
-    AlertCircle
+    CheckCircle2,
+    X
 } from "lucide-react"
-import { getTaskById } from "@/redux/thunks/task.thunks"
-import { PAGE_ROUTES } from "@/constants"
+import { useTaskViewController } from "./task-view.controller"
 
 
 export default function TaskView() {
-    const { id } = useParams<{ id: string }>()
-    const navigate = useNavigate()
-    const dispatch = useAppDispatch()
-    const { currentTask } = useAppSelector((state) => state.tasks)
-    const [taskNotFound, setTaskNotFound] = useState(false)
+    const { getters, handlers, utils } = useTaskViewController()
+    const {
+        currentTask,
+        loading,
+        taskNotFound
+    } = getters
+    const {
+        onBack,
+        onEdit,
+        onDelete,
+        onDuplicate
+    } = handlers
+    const {
+        getStatusColor,
+        getPriorityColor,
+        getTypeColor,
+        formatDate
+    } = utils
 
-    useEffect(() => {
-        if (id) {
-            dispatch(getTaskById(id))
-                .unwrap()
-                .catch(() => {
-                    setTaskNotFound(true)
-                })
-        }
-    }, [dispatch, id])
-
+    // Status icon component
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'Todo': return <Circle className="h-4 w-4" />
             case 'In Progress': return <Clock className="h-4 w-4" />
-            case 'Backlog': return <Pause className="h-4 w-4" />
+            case 'Backlog': return <AlertCircle className="h-4 w-4" />
             case 'Done': return <CheckCircle2 className="h-4 w-4" />
             case 'Cancelled': return <X className="h-4 w-4" />
             default: return <Circle className="h-4 w-4" />
         }
     }
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'Todo': return 'bg-gray-100 text-gray-800'
-            case 'In Progress': return 'bg-blue-100 text-blue-800'
-            case 'Backlog': return 'bg-yellow-100 text-yellow-800'
-            case 'Done': return 'bg-green-100 text-green-800'
-            case 'Cancelled': return 'bg-red-100 text-red-800'
-            default: return 'bg-gray-100 text-gray-800'
-        }
-    }
-
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case 'High': return 'bg-red-100 text-red-800'
-            case 'Medium': return 'bg-yellow-100 text-yellow-800'
-            case 'Low': return 'bg-green-100 text-green-800'
-            default: return 'bg-gray-100 text-gray-800'
-        }
-    }
-
-    const getTypeColor = (type: string) => {
-        switch (type) {
-            case 'Feature': return 'bg-blue-100 text-blue-800'
-            case 'Bug': return 'bg-red-100 text-red-800'
-            case 'Documentation': return 'bg-purple-100 text-purple-800'
-            case 'Enhancement': return 'bg-green-100 text-green-800'
-            case 'Task': return 'bg-gray-100 text-gray-800'
-            default: return 'bg-gray-100 text-gray-800'
-        }
-    }
-
-    const handleBack = () => {
-        navigate(-1)
-    }
-
-    const handleEdit = () => {
-        if (currentTask) {
-            navigate(PAGE_ROUTES.DEVELOPER.TASK.EDIT.replace(":id", currentTask.id))
-        }
+    if (loading && !currentTask) {
+        return (
+            <div className="container mx-auto py-6 space-y-6">
+                <div className="animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+                    <div className="space-y-4">
+                        <div className="h-32 bg-gray-200 rounded"></div>
+                        <div className="h-24 bg-gray-200 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     if (taskNotFound || !currentTask) {
@@ -99,7 +74,7 @@ export default function TaskView() {
                         <p className="text-muted-foreground text-center mb-4">
                             The task you're looking for doesn't exist or you don't have permission to view it.
                         </p>
-                        <Button onClick={handleBack}>
+                        <Button onClick={onBack}>
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Go Back
                         </Button>
@@ -116,13 +91,23 @@ export default function TaskView() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">{currentTask.title}</h1>
                     <p className="text-muted-foreground">
-                        {currentTask.taskId} • Created {new Date(currentTask.createdAt).toLocaleDateString()}
+                        {currentTask.taskId} • Created {formatDate(currentTask.createdAt)}
                     </p>
                 </div>
-                <Button onClick={handleEdit}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Task
-                </Button>
+                <div className="flex gap-2">
+                    <Button onClick={onEdit}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Task
+                    </Button>
+                    <Button variant="outline" onClick={onDuplicate}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Duplicate
+                    </Button>
+                    <Button variant="outline" onClick={onDelete} className="text-red-600 hover:text-red-700">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                    </Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -200,7 +185,7 @@ export default function TaskView() {
                                     <label className="text-sm font-medium text-muted-foreground">Due Date</label>
                                     <div className="mt-1 flex items-center gap-2 text-sm">
                                         <Calendar className="h-4 w-4" />
-                                        {new Date(currentTask.dueDate).toLocaleDateString()}
+                                        {formatDate(currentTask.dueDate)}
                                     </div>
                                 </div>
                             )}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { toast } from "sonner"
 import { createTask, getAllTasks } from "@/redux/thunks/task.thunks"
+import { PAGE_ROUTES } from "@/constants"
 import type { TaskFormData } from "@/types/task/task.types"
 
 interface TaskCreateControllerResponse {
@@ -119,7 +120,7 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
           sortOrder: 'desc'
         }))
 
-        navigate("/task-management")
+        navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
       } else {
         const errorMessage = result.payload as string || "Failed to create task"
         toast.error(errorMessage)
@@ -137,7 +138,7 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
       const confirmLeave = window.confirm("You have unsaved changes. Are you sure you want to leave?")
       if (!confirmLeave) return
     }
-    navigate("/task-management")
+    navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
   }, [navigate, isFormDirty])
 
   const handleReset = useCallback(() => {

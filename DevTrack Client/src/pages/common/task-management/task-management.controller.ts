@@ -6,10 +6,12 @@ import { toast } from "sonner"
 import type { TaskData } from "@/types/task/task.types"
 import { getAllTasks, deleteTask } from "@/redux/thunks/task.thunks"
 import { setFilters, clearFilters } from "@/redux/slices/taskSlice"
-import { PAGE_ROUTES } from "@/constants"
+import { PAGE_ROUTES, PAGE_TEXTS } from "@/constants"
 
 interface TaskManagementControllerResponse {
   getters: {
+    title: string
+    description: string
     tasks: TaskData[]
     loading: boolean
     error: string | null
@@ -122,6 +124,8 @@ export const useTaskManagementController = (): TaskManagementControllerResponse 
 
   return {
     getters: {
+      title: PAGE_TEXTS.TASK_MANAGEMENT.TITLE,
+      description: PAGE_TEXTS.TASK_MANAGEMENT.DESCRIPTION,
       tasks,
       loading,
       error,

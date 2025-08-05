@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, X, Save, Plus, Loader2, RotateCcw, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 import { TASK_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from "@/types/task/task.types"
+import { PAGE_TEXTS } from "@/constants"
 import { useTaskEditController } from "./task-edit.controller"
 
 export default function TaskEdit() {
@@ -72,9 +73,9 @@ export default function TaskEdit() {
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Edit Task</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{PAGE_TEXTS.TASK_EDIT.TITLE}</h1>
         <p className="text-muted-foreground">
-          Update task: {currentTask?.taskId}
+          {PAGE_TEXTS.TASK_EDIT.DESCRIPTION} - {currentTask?.taskId}
         </p>
       </div>
 

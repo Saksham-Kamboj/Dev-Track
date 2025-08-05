@@ -242,4 +242,53 @@ export const PAGE_TEXTS = {
     TITLE: "Developer Dashboard",
     DESCRIPTION: "Manage your tasks and projects",
   },
+
+  // Task Management Pages
+  TASK_MANAGEMENT: {
+    TITLE: "Task Management",
+    DESCRIPTION: "Manage and track your development tasks efficiently",
+  },
+
+  TASK_CREATE: {
+    TITLE: "Create New Task",
+    DESCRIPTION: "Add a new task to your project",
+  },
+
+  TASK_EDIT: {
+    TITLE: "Edit Task",
+    DESCRIPTION: "Update task information and details",
+  },
+
+  TASK_VIEW: {
+    TITLE: "Task Details",
+    DESCRIPTION: "View detailed task information",
+    BACK_TO_TASKS: "Back to Tasks",
+    TASK_NOT_FOUND: "Task Not Found",
+    TASK_NOT_FOUND_DESCRIPTION: "The task you're looking for doesn't exist or you don't have permission to view it.",
+    ACTIONS: {
+      EDIT: "Edit Task",
+      DELETE: "Delete Task",
+      DUPLICATE: "Duplicate Task",
+    },
+    SECTIONS: {
+      OVERVIEW: "Task Overview",
+      DESCRIPTION: "Description",
+      DETAILS: "Details",
+      PEOPLE: "People",
+      TAGS: "Tags",
+      ACTIVITY: "Activity",
+    },
+    FIELDS: {
+      TASK_ID: "Task ID",
+      STATUS: "Status",
+      PRIORITY: "Priority",
+      TYPE: "Type",
+      DUE_DATE: "Due Date",
+      ESTIMATED_HOURS: "Estimated Hours",
+      ASSIGNED_TO: "Assigned To",
+      CREATED_BY: "Created By",
+      CREATED_DATE: "Created Date",
+      COMPLETED_DATE: "Completed Date",
+    },
+  },
 } as const

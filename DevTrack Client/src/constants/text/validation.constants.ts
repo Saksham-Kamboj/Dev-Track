@@ -105,4 +105,41 @@ export const VALIDATION_MESSAGES = {
       RANGE: "Review severity must be between 1 and 10",
     },
   },
+
+  // Task management validation
+  TASK: {
+    TITLE: {
+      REQUIRED: "Task title is required",
+      MIN_LENGTH: "Title must be at least 3 characters",
+      MAX_LENGTH: "Title must be less than 100 characters",
+    },
+    DESCRIPTION: {
+      REQUIRED: "Task description is required",
+      MIN_LENGTH: "Description must be at least 10 characters",
+      MAX_LENGTH: "Description must be less than 1000 characters",
+    },
+    STATUS: {
+      REQUIRED: "Task status is required",
+    },
+    PRIORITY: {
+      REQUIRED: "Task priority is required",
+    },
+    TYPE: {
+      REQUIRED: "Task type is required",
+    },
+    ESTIMATED_HOURS: {
+      MIN_VALUE: "Estimated hours must be greater than 0",
+      MAX_VALUE: "Estimated hours must be less than 1000",
+      INVALID: "Please enter a valid number for estimated hours",
+    },
+    DUE_DATE: {
+      INVALID: "Please select a valid due date",
+      PAST_DATE: "Due date cannot be in the past",
+    },
+    TAGS: {
+      MAX_COUNT: "Maximum 10 tags allowed",
+      DUPLICATE: "Tag already exists",
+      INVALID_CHARACTERS: "Tags can only contain letters, numbers, and hyphens",
+    },
+  },
 } as const

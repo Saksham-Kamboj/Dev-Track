@@ -60,7 +60,7 @@ const TaskEdit = lazy(() =>
 );
 
 const TaskView = lazy(() =>
-  import(/* webpackChunkName: "task-view" */ "@/pages/common/task-view/task-view")
+  import(/* webpackChunkName: "task-view" */ "@/pages/common/task-management/task-view/task-view")
 );
 
 // Profile pages - shared across roles
