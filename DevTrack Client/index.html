@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- Performance optimizations -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0047AB" />
+
+  <!-- DNS prefetch for external resources -->
+  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+
+  <!-- Preconnect to critical origins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Critical resource hints -->
+  <link rel="modulepreload" href="/src/main.tsx" />
+  <link rel="modulepreload" href="/src/App.tsx" />
+
+  <!-- Icons and manifest -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- SEO and meta information -->
+  <meta name="description" content="Dev Track - Efficient dashboard for data-driven decisions" />
+  <meta name="keywords" content="dashboard, analytics, data visualization" />
+  <meta name="author" content="Saksham Kamboj" />
+
+  <!-- Open Graph meta tags -->
+  <meta property="og:title" content="Dev Track" />
+  <meta property="og:description" content="Efficient dashboard for data-driven decisions" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/logo512.png" />
+
+  <!-- Twitter Card meta tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Dev Track" />
+  <meta name="twitter:description" content="Efficient dashboard for data-driven decisions" />
+  <meta name="twitter:image" content="/logo512.png" />
+
+  <title>Dev Track</title>
+
+  <!-- Critical CSS inlined for faster rendering with theme support -->
+  <style>
+    /* Theme variables matching your shadcn/ui setup */
+    :root {
+      --background: oklch(1 0 0);
+      --foreground: oklch(0.141 0.005 285.823);
+      --muted: oklch(0.967 0.001 286.375);
+      --muted-foreground: oklch(0.552 0.016 285.938);
+      --primary: oklch(0.623 0.214 259.815);
+      --border: oklch(0.92 0.004 286.32);
+    }
+
+    .dark {
+      --background: oklch(0.141 0.005 285.823);
+      --foreground: oklch(0.985 0 0);
+      --muted: oklch(0.274 0.006 286.033);
+      --muted-foreground: oklch(0.705 0.015 286.067);
+      --primary: oklch(0.546 0.245 262.881);
+      --border: oklch(1 0 0 / 10%);
+    }
+
+    /* System theme detection */
+    @media (prefers-color-scheme: dark) {
+      :root:not(.light) {
+        --background: oklch(0.141 0.005 285.823);
+        --foreground: oklch(0.985 0 0);
+        --muted: oklch(0.274 0.006 286.033);
+        --muted-foreground: oklch(0.705 0.015 286.067);
+        --primary: oklch(0.546 0.245 262.881);
+        --border: oklch(1 0 0 / 10%);
+      }
+    }
+
+    /* Critical above-the-fold styles */
+    #root {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--background);
+      color: var(--foreground);
+    }
+
+    /* Loading spinner with theme colors */
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--muted);
+      border-top: 2px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Loading container with theme support */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      background-color: var(--background);
+      color: var(--foreground);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .loading-text {
+      margin-top: 16px;
+      color: var(--muted-foreground);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* Prevent layout shift */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Cambria", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: var(--background);
+      color: var(--foreground);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Theme detection script will run before content loads */
+    .theme-loading {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .theme-loaded {
+      opacity: 1;
+    }
+  </style>
+
+  <!-- Theme detection script -->
+  <script>
+    (function () {
+      // Get stored theme or detect system preference
+      const getTheme = () => {
+        const stored = localStorage.getItem('vite-ui-theme');
+        if (stored && stored !== 'system') return stored;
+
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      };
+
+      // Apply theme immediately to prevent flash
+      const theme = getTheme();
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+      document.documentElement.classList.toggle('light', theme === 'light');
+
+      // Listen for system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        const stored = localStorage.getItem('vite-ui-theme');
+        if (!stored || stored === 'system') {
+          document.documentElement.classList.toggle('dark', e.matches);
+          document.documentElement.classList.toggle('light', !e.matches);
+        }
+      });
+
+      // Mark theme as loaded
+      document.documentElement.classList.add('theme-loaded');
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="root">
+    <!-- Loading fallback with theme support -->
+    <div class="loading-container theme-loading">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Loading Dev Track...</p>
+    </div>
+  </div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

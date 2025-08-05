@@ -1,0 +1,23 @@
+{
+  "name": "devtrack-server",
+  "version": "1.0.0",
+  "description": "TaskPulse is a team productivity and task-tracking dashboard for software development teams.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "Saksham-Kamboj",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.17.0",
+    "nodemon": "^3.1.10"
+  }
+}
