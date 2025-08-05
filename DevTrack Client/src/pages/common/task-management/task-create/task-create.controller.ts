@@ -122,8 +122,14 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
 
         navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
       } else {
-        const errorMessage = result.payload as string || "Failed to create task"
-        toast.error(errorMessage)
+        const errorPayload = result.payload as { message: string; code?: string; retry?: boolean }
+        const errorMessage = errorPayload?.message || "Failed to create task"
+
+        if (errorPayload?.code === 'DUPLICATE_TASK_ID' && errorPayload?.retry) {
+          toast.error(errorMessage + " Please try again.")
+        } else {
+          toast.error(errorMessage)
+        }
       }
     } catch (error) {
       console.error("Create task error:", error)

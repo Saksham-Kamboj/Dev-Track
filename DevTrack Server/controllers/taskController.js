@@ -36,8 +36,36 @@ export const createTask = async (req, res) => {
     }
 
     // Generate unique task ID
-    const count = await Task.countDocuments();
-    const taskId = `TSK-${String(count + 1).padStart(4, '0')}`;
+    let taskId;
+    let counter = 1;
+
+    // Get all existing task IDs and find the highest number
+    const existingTasks = await Task.find({}, { taskId: 1 }).sort({ taskId: -1 });
+
+    if (existingTasks.length > 0) {
+      // Extract numbers from all task IDs and find the maximum
+      const taskNumbers = existingTasks
+        .map(task => {
+          const match = task.taskId.match(/TSK-(\d+)/);
+          return match ? parseInt(match[1]) : 0;
+        })
+        .filter(num => !isNaN(num));
+
+      if (taskNumbers.length > 0) {
+        counter = Math.max(...taskNumbers) + 1;
+      }
+    }
+
+    // Generate the new task ID
+    taskId = `TSK-${String(counter).padStart(4, '0')}`;
+
+    // Double-check uniqueness (safety measure)
+    const existingTask = await Task.findOne({ taskId });
+    if (existingTask) {
+      // If somehow still exists, use timestamp-based approach
+      const timestamp = Date.now().toString().slice(-4);
+      taskId = `TSK-${timestamp}`;
+    }
 
     const taskData = {
       taskId,
@@ -53,13 +81,35 @@ export const createTask = async (req, res) => {
       createdBy: req.user._id
     };
 
-    const task = new Task(taskData);
+    // Create task with retry mechanism for race conditions
+    let task;
+    let retryCount = 0;
+    const maxRetries = 3;
 
-    await task.save();
-    await task.populate([
-      { path: 'assignedTo', select: 'name email role' },
-      { path: 'createdBy', select: 'name email role' }
-    ]);
+    while (retryCount < maxRetries) {
+      try {
+        task = new Task(taskData);
+        await task.save();
+        await task.populate([
+          { path: 'assignedTo', select: 'name email role' },
+          { path: 'createdBy', select: 'name email role' }
+        ]);
+        break; // Success, exit retry loop
+      } catch (saveError) {
+        if (saveError.code === 11000 && retryCount < maxRetries - 1) {
+          // Duplicate key error, regenerate task ID and retry
+          retryCount++;
+          console.log(`Task ID collision, retrying... (attempt ${retryCount + 1})`);
+
+          // Generate new task ID with timestamp suffix
+          const timestamp = Date.now().toString().slice(-3);
+          const newCounter = counter + retryCount;
+          taskData.taskId = `TSK-${String(newCounter).padStart(4, '0')}-${timestamp}`;
+        } else {
+          throw saveError; // Re-throw if not a duplicate key error or max retries reached
+        }
+      }
+    }
 
     // Transform task for frontend
     const transformedTask = {
@@ -88,9 +138,29 @@ export const createTask = async (req, res) => {
     });
   } catch (error) {
     console.error('Create task error:', error);
+
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Task ID already exists. Please try again.',
+        error: 'DUPLICATE_TASK_ID'
+      });
+    }
+
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: validationErrors
+      });
+    }
+
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error while creating task'
     });
   }
 };
@@ -140,7 +210,9 @@ export const getTasks = async (req, res) => {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
-        { taskId: { $regex: search, $options: 'i' } }
+        { taskId: { $regex: search, $options: 'i' } },
+        { assignedTo: { $regex: search, $options: 'i' } },
+        { createdBy: { $regex: search, $options: 'i' } }
       ];
     }
 
@@ -462,5 +534,46 @@ export const addComment = async (req, res) => {
       success: false,
       message: 'Server error'
     });
+  }
+};
+
+// Utility function to get next available task ID
+export const getNextTaskId = async () => {
+  try {
+    // Get all existing task IDs and find the highest number
+    const existingTasks = await Task.find({}, { taskId: 1 }).sort({ taskId: -1 });
+    let counter = 1;
+
+    if (existingTasks.length > 0) {
+      // Extract numbers from all task IDs and find the maximum
+      const taskNumbers = existingTasks
+        .map(task => {
+          const match = task.taskId.match(/TSK-(\d+)/);
+          return match ? parseInt(match[1]) : 0;
+        })
+        .filter(num => !isNaN(num));
+
+      if (taskNumbers.length > 0) {
+        counter = Math.max(...taskNumbers) + 1;
+      }
+    }
+
+    return `TSK-${String(counter).padStart(4, '0')}`;
+  } catch (error) {
+    console.error('Error generating task ID:', error);
+    // Fallback to timestamp-based ID
+    const timestamp = Date.now().toString().slice(-4);
+    return `TSK-${timestamp}`;
+  }
+};
+
+// Utility function to validate task ID uniqueness
+export const isTaskIdUnique = async (taskId) => {
+  try {
+    const existingTask = await Task.findOne({ taskId });
+    return !existingTask;
+  } catch (error) {
+    console.error('Error checking task ID uniqueness:', error);
+    return false;
   }
 };

@@ -33,6 +33,8 @@ import {
 } from "lucide-react"
 import { TASK_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from "@/types/task/task.types"
 import { useTaskManagementController } from "./task-management.controller"
+import { Link } from "react-router-dom"
+import { PAGE_ROUTES } from "@/constants"
 
 /**
  * Task Management Page Component
@@ -388,12 +390,14 @@ export default function TaskManagement() {
                 ) : (
                     // Tasks list
                     tasks.map((task) => (
-                        <Card key={task.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                        <Card key={task.id} className="hover:shadow-md transition-shadow">
                             <CardHeader className="pb-3">
                                 <div className="flex items-start justify-between">
                                     <div className="space-y-1">
                                         <CardTitle className="text-lg leading-tight">
-                                            {task.title}
+                                            <Link to={PAGE_ROUTES.DEVELOPER.TASK.VIEW.replace(":id", task.id)}>
+                                                {task.title.length > 50 ? task.title.slice(0, 50) + '...' : task.title}
+                                            </Link>
                                         </CardTitle>
                                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                             <span>{task.taskId}</span>

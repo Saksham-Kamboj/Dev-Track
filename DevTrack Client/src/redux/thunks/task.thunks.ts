@@ -51,15 +51,38 @@ export const createTask = createAsyncThunk<
   TaskApiResponse,
   TaskFormData,
   {
-    rejectValue: string
+    rejectValue: { message: string; code?: string; retry?: boolean }
   }
 >('tasks/createTask', async (taskData, { rejectWithValue }) => {
   try {
     const response = await taskService.createTask(taskData)
     return response
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create task'
-    return rejectWithValue(errorMessage)
+  } catch (error: any) {
+    console.error('Create task error:', error)
+
+    // Handle specific error types
+    if (error?.response?.data?.error === 'DUPLICATE_TASK_ID') {
+      return rejectWithValue({
+        message: 'Task ID conflict occurred. Please try again.',
+        code: 'DUPLICATE_TASK_ID',
+        retry: true
+      })
+    }
+
+    if (error?.response?.data?.errors) {
+      return rejectWithValue({
+        message: error.response.data.errors.join(', '),
+        code: 'VALIDATION_ERROR'
+      })
+    }
+
+    const errorMessage = error?.response?.data?.message ||
+      (error instanceof Error ? error.message : 'Failed to create task')
+
+    return rejectWithValue({
+      message: errorMessage,
+      code: 'UNKNOWN_ERROR'
+    })
   }
 })
 

@@ -157,7 +157,8 @@ const taskSlice = createSlice({
       })
       .addCase(createTask.rejected, (state, action) => {
         state.loading = false
-        state.error = action.payload || 'Failed to create task'
+        const errorPayload = action.payload as { message: string; code?: string; retry?: boolean } | undefined
+        state.error = errorPayload?.message || 'Failed to create task'
       })
 
     // Update task
