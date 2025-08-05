@@ -35,7 +35,12 @@ export const createTask = async (req, res) => {
       }
     }
 
-    const task = new Task({
+    // Generate unique task ID
+    const count = await Task.countDocuments();
+    const taskId = `TSK-${String(count + 1).padStart(4, '0')}`;
+
+    const taskData = {
+      taskId,
       title,
       description,
       status: status || 'Todo',
@@ -46,7 +51,9 @@ export const createTask = async (req, res) => {
       tags: tags || [],
       assignedTo: assignedTo || req.user._id,
       createdBy: req.user._id
-    });
+    };
+
+    const task = new Task(taskData);
 
     await task.save();
     await task.populate([

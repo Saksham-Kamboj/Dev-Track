@@ -91,13 +91,8 @@ const taskSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate unique task ID before saving
+// Pre-save hook for task status changes
 taskSchema.pre('save', async function (next) {
-  if (this.isNew && !this.taskId) {
-    const count = await mongoose.model('Task').countDocuments();
-    this.taskId = `TSK-${String(count + 1).padStart(4, '0')}`;
-  }
-
   // Set completedAt when status changes to Done
   if (this.isModified('status')) {
     if (this.status === 'Done' && !this.completedAt) {
