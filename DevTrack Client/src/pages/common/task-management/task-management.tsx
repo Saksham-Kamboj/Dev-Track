@@ -203,7 +203,7 @@ export default function TaskManagement() {
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0 select-none" align="start">
                                         <div className="p-2">
-                                            <div className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                            <div className="flex items-center space-x-2 p-2 rounded">
                                                 <Checkbox
                                                     id="priority-all"
                                                     checked={filters.priority.length === 0}
@@ -214,7 +214,7 @@ export default function TaskManagement() {
                                                 </label>
                                             </div>
                                             {TASK_PRIORITY_OPTIONS.map((option) => (
-                                                <div key={option.value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                                <div key={option.value} className="flex items-center space-x-2 p-2 rounded">
                                                     <Checkbox
                                                         id={`priority-${option.value}`}
                                                         checked={filters.priority.includes(option.value)}
@@ -256,7 +256,7 @@ export default function TaskManagement() {
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0 select-none" align="start">
                                         <div className="p-2">
-                                            <div className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                            <div className="flex items-center space-x-2 p-2 rounded">
                                                 <Checkbox
                                                     id="type-all"
                                                     checked={filters.type.length === 0}
@@ -267,7 +267,7 @@ export default function TaskManagement() {
                                                 </label>
                                             </div>
                                             {TASK_TYPE_OPTIONS.map((option) => (
-                                                <div key={option.value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                                <div key={option.value} className="flex items-center space-x-2 p-2 rounded">
                                                     <Checkbox
                                                         id={`type-${option.value}`}
                                                         checked={filters.type.includes(option.value)}
