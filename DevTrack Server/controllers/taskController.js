@@ -46,10 +46,14 @@ export const createTask = async (req, res) => {
       // Extract numbers from all task IDs and find the maximum
       const taskNumbers = existingTasks
         .map(task => {
+          // Check if taskId exists and is a string
+          if (!task.taskId || typeof task.taskId !== 'string') {
+            return 0;
+          }
           const match = task.taskId.match(/TSK-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
-        .filter(num => !isNaN(num));
+        .filter(num => !isNaN(num) && num > 0);
 
       if (taskNumbers.length > 0) {
         counter = Math.max(...taskNumbers) + 1;

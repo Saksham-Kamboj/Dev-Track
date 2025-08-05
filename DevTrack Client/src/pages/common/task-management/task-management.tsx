@@ -394,7 +394,7 @@ export default function TaskManagement() {
                             <CardHeader className="pb-3">
                                 <div className="flex items-start justify-between">
                                     <div className="space-y-1">
-                                        <CardTitle className="text-lg leading-tight">
+                                        <CardTitle className="text-lg leading-tight text-primary">
                                             <Link to={PAGE_ROUTES.DEVELOPER.TASK.VIEW.replace(":id", task.id)}>
                                                 {task.title.length > 50 ? task.title.slice(0, 50) + '...' : task.title}
                                             </Link>

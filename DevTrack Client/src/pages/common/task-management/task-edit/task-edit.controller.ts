@@ -4,7 +4,6 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { toast } from "sonner"
 import { getTaskById, updateTask } from "@/redux/thunks/task.thunks"
 import type { TaskFormData, TaskData } from "@/types/task/task.types"
-import { PAGE_ROUTES } from "@/constants"
 
 interface TaskEditControllerResponse {
   getters: {
@@ -165,7 +164,7 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
 
       if (updateTask.fulfilled.match(result)) {
         toast.success("Task updated successfully!")
-        navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW.replace(":id", id))
+        navigate(-1)
       } else {
         toast.error("Failed to update task")
       }
@@ -181,7 +180,7 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
       const confirmLeave = window.confirm("You have unsaved changes. Are you sure you want to leave?")
       if (!confirmLeave) return
     }
-    navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW.replace(":id", id || ""))
+    navigate(-1)
   }, [navigate, isFormDirty])
 
   const handleReset = useCallback(() => {
