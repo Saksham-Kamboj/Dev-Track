@@ -22,9 +22,9 @@ interface TaskManagementControllerResponse {
       pages: number
     } | null
     filters: {
-      status: string[]
-      priority: string[]
-      type: string[]
+      status: string | null
+      priority: string | null
+      type: string | null
       search: string
       assignedTo?: string
     }
@@ -35,9 +35,9 @@ interface TaskManagementControllerResponse {
     onDeleteTask: (taskId: string) => void
     onViewTask: (task: TaskData) => void
     onSearchChange: (search: string) => void
-    onStatusFilter: (statuses: string[]) => void
-    onPriorityFilter: (priorities: string[]) => void
-    onTypeFilter: (types: string[]) => void
+    onStatusFilter: (status: string | null) => void
+    onPriorityFilter: (priority: string | null) => void
+    onTypeFilter: (type: string | null) => void
     onClearFilters: () => void
     onPageChange: (page: number) => void
   }
@@ -114,9 +114,9 @@ export const useTaskManagementController = (): TaskManagementControllerResponse 
         page: 1, // Reset to first page when searching
         limit: pagination?.limit || 10,
         search: search || undefined,
-        status: filters.status.length > 0 ? filters.status as any : undefined,
-        priority: filters.priority.length > 0 ? filters.priority as any : undefined,
-        type: filters.type.length > 0 ? filters.type as any : undefined,
+        status: filters.status as any || undefined,
+        priority: filters.priority as any || undefined,
+        type: filters.type as any || undefined,
         assignedTo: filters.assignedTo || undefined,
         sortBy: 'createdAt',
         sortOrder: 'desc'
@@ -124,48 +124,48 @@ export const useTaskManagementController = (): TaskManagementControllerResponse 
     }, 500)
   }, [dispatch, pagination?.limit, filters])
 
-  const handleStatusFilter = useCallback((statuses: string[]) => {
-    dispatch(setFilters({ status: statuses }))
+  const handleStatusFilter = useCallback((status: string | null) => {
+    dispatch(setFilters({ status }))
     // Trigger new API call with updated filters
     dispatch(getAllTasks({
       page: 1, // Reset to first page when filtering
       limit: pagination?.limit || 10,
       search: filters.search || undefined,
-      status: statuses.length > 0 ? statuses as any : undefined,
-      priority: filters.priority.length > 0 ? filters.priority as any : undefined,
-      type: filters.type.length > 0 ? filters.type as any : undefined,
+      status: status as any || undefined,
+      priority: filters.priority as any || undefined,
+      type: filters.type as any || undefined,
       assignedTo: filters.assignedTo || undefined,
       sortBy: 'createdAt',
       sortOrder: 'desc'
     }))
   }, [dispatch, pagination?.limit, filters])
 
-  const handlePriorityFilter = useCallback((priorities: string[]) => {
-    dispatch(setFilters({ priority: priorities }))
+  const handlePriorityFilter = useCallback((priority: string | null) => {
+    dispatch(setFilters({ priority }))
     // Trigger new API call with updated filters
     dispatch(getAllTasks({
       page: 1, // Reset to first page when filtering
       limit: pagination?.limit || 10,
       search: filters.search || undefined,
-      status: filters.status.length > 0 ? filters.status as any : undefined,
-      priority: priorities.length > 0 ? priorities as any : undefined,
-      type: filters.type.length > 0 ? filters.type as any : undefined,
+      status: filters.status as any || undefined,
+      priority: priority as any || undefined,
+      type: filters.type as any || undefined,
       assignedTo: filters.assignedTo || undefined,
       sortBy: 'createdAt',
       sortOrder: 'desc'
     }))
   }, [dispatch, pagination?.limit, filters])
 
-  const handleTypeFilter = useCallback((types: string[]) => {
-    dispatch(setFilters({ type: types }))
+  const handleTypeFilter = useCallback((type: string | null) => {
+    dispatch(setFilters({ type }))
     // Trigger new API call with updated filters
     dispatch(getAllTasks({
       page: 1, // Reset to first page when filtering
       limit: pagination?.limit || 10,
       search: filters.search || undefined,
-      status: filters.status.length > 0 ? filters.status as any : undefined,
-      priority: filters.priority.length > 0 ? filters.priority as any : undefined,
-      type: types.length > 0 ? types as any : undefined,
+      status: filters.status as any || undefined,
+      priority: filters.priority as any || undefined,
+      type: type as any || undefined,
       assignedTo: filters.assignedTo || undefined,
       sortBy: 'createdAt',
       sortOrder: 'desc'
@@ -188,9 +188,9 @@ export const useTaskManagementController = (): TaskManagementControllerResponse 
       page,
       limit: pagination?.limit || 10,
       search: filters.search || undefined,
-      status: filters.status.length > 0 ? filters.status as any : undefined,
-      priority: filters.priority.length > 0 ? filters.priority as any : undefined,
-      type: filters.type.length > 0 ? filters.type as any : undefined,
+      status: filters.status as any || undefined,
+      priority: filters.priority as any || undefined,
+      type: filters.type as any || undefined,
       assignedTo: filters.assignedTo || undefined,
       sortBy: 'createdAt',
       sortOrder: 'desc'
