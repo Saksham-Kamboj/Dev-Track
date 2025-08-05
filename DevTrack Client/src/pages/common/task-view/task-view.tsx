@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
     ArrowLeft,
@@ -17,13 +17,14 @@ import {
     AlertCircle
 } from "lucide-react"
 import { getTaskById } from "@/redux/thunks/task.thunks"
-import type { TaskData } from "@/types/task/task.types"
+import { PAGE_ROUTES } from "@/constants"
+
 
 export default function TaskView() {
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
-    const { currentTask, loading } = useAppSelector((state) => state.tasks)
+    const { currentTask } = useAppSelector((state) => state.tasks)
     const [taskNotFound, setTaskNotFound] = useState(false)
 
     useEffect(() => {
@@ -84,23 +85,8 @@ export default function TaskView() {
 
     const handleEdit = () => {
         if (currentTask) {
-            navigate(`/tasks/edit/${currentTask.id}`)
+            navigate(PAGE_ROUTES.DEVELOPER.TASK.EDIT.replace(":id", currentTask.id))
         }
-    }
-
-    if (loading) {
-        return (
-            <div className="container mx-auto py-6 space-y-6">
-                <div className="animate-pulse">
-                    <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
-                    <div className="space-y-4">
-                        <div className="h-32 bg-gray-200 rounded"></div>
-                        <div className="h-24 bg-gray-200 rounded"></div>
-                    </div>
-                </div>
-            </div>
-        )
     }
 
     if (taskNotFound || !currentTask) {
@@ -124,19 +110,14 @@ export default function TaskView() {
     }
 
     return (
-        <div className="container mx-auto py-6 space-y-6">
+        <div className="container mx-auto py-2 space-y-3">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" onClick={handleBack}>
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{currentTask.title}</h1>
-                        <p className="text-muted-foreground">
-                            {currentTask.taskId} • Created {new Date(currentTask.createdAt).toLocaleDateString()}
-                        </p>
-                    </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">{currentTask.title}</h1>
+                    <p className="text-muted-foreground">
+                        {currentTask.taskId} • Created {new Date(currentTask.createdAt).toLocaleDateString()}
+                    </p>
                 </div>
                 <Button onClick={handleEdit}>
                     <Edit className="h-4 w-4 mr-2" />
@@ -185,8 +166,8 @@ export default function TaskView() {
                         <CardHeader>
                             <CardTitle>Details</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
+                        <CardContent className="space-y-4 grid grid-cols-12">
+                            <div className="col-span-4">
                                 <label className="text-sm font-medium text-muted-foreground">Status</label>
                                 <div className="mt-1">
                                     <Badge className={`${getStatusColor(currentTask.status)} flex items-center gap-1 w-fit`}>
@@ -196,7 +177,7 @@ export default function TaskView() {
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="col-span-4">
                                 <label className="text-sm font-medium text-muted-foreground">Priority</label>
                                 <div className="mt-1">
                                     <Badge variant="outline" className={getPriorityColor(currentTask.priority)}>
@@ -205,7 +186,7 @@ export default function TaskView() {
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="col-span-4">
                                 <label className="text-sm font-medium text-muted-foreground">Type</label>
                                 <div className="mt-1">
                                     <Badge variant="outline" className={getTypeColor(currentTask.type)}>
@@ -215,7 +196,7 @@ export default function TaskView() {
                             </div>
 
                             {currentTask.dueDate && (
-                                <div>
+                                <div className="col-span-6">
                                     <label className="text-sm font-medium text-muted-foreground">Due Date</label>
                                     <div className="mt-1 flex items-center gap-2 text-sm">
                                         <Calendar className="h-4 w-4" />
@@ -225,7 +206,7 @@ export default function TaskView() {
                             )}
 
                             {currentTask.estimatedHours && (
-                                <div>
+                                <div className="col-span-6">
                                     <label className="text-sm font-medium text-muted-foreground">Estimated Hours</label>
                                     <div className="mt-1 flex items-center gap-2 text-sm">
                                         <Clock className="h-4 w-4" />

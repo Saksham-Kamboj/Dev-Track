@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { toast } from "sonner"
 import { getTaskById, updateTask } from "@/redux/thunks/task.thunks"
-import type { TaskFormData } from "@/types/task/task.types"
+import type { TaskFormData, TaskData } from "@/types/task/task.types"
+import { PAGE_ROUTES } from "@/constants"
 
 interface TaskEditControllerResponse {
   getters: {
@@ -12,8 +13,11 @@ interface TaskEditControllerResponse {
     saving: boolean
     dueDate: Date | undefined
     newTag: string
-    currentTask: any
+    currentTask: TaskData | null
     taskNotFound: boolean
+    isFormValid: boolean
+    isFormDirty: boolean
+    error: string | null
   }
   handlers: {
     onInputChange: (field: keyof TaskFormData, value: any) => void
@@ -23,6 +27,7 @@ interface TaskEditControllerResponse {
     onRemoveTag: (tag: string) => void
     onSubmit: (e: React.FormEvent) => void
     onCancel: () => void
+    onReset: () => void
   }
 }
 
@@ -30,13 +35,14 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { id } = useParams<{ id: string }>()
-  const { currentTask, loading } = useAppSelector((state) => state.tasks)
-  
+  const { currentTask, loading, error } = useAppSelector((state) => state.tasks)
+
   const [saving, setSaving] = useState(false)
   const [dueDate, setDueDate] = useState<Date>()
   const [newTag, setNewTag] = useState("")
   const [taskNotFound, setTaskNotFound] = useState(false)
-  
+  const [initialFormData, setInitialFormData] = useState<TaskFormData | null>(null)
+
   const [formData, setFormData] = useState<TaskFormData>({
     title: "",
     description: "",
@@ -47,6 +53,17 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
     estimatedHours: undefined,
     tags: []
   })
+
+  // Memoized computed values
+  const isFormValid = useMemo(() => {
+    return formData.title.trim().length > 0 && formData.description.trim().length > 0
+  }, [formData.title, formData.description])
+
+  const isFormDirty = useMemo(() => {
+    if (!initialFormData) return false
+    return JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
+      (dueDate?.toISOString() !== currentTask?.dueDate)
+  }, [formData, initialFormData, dueDate, currentTask?.dueDate])
 
   // Load task data
   useEffect(() => {
@@ -62,7 +79,7 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
   // Populate form when task loads
   useEffect(() => {
     if (currentTask) {
-      setFormData({
+      const newFormData = {
         title: currentTask.title,
         description: currentTask.description,
         status: currentTask.status,
@@ -70,15 +87,27 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
         type: currentTask.type,
         dueDate: currentTask.dueDate || "",
         estimatedHours: currentTask.estimatedHours || undefined,
-        tags: currentTask.tags
-      })
-      
+        tags: currentTask.tags || []
+      }
+
+      setFormData(newFormData)
+      setInitialFormData(newFormData)
+
       if (currentTask.dueDate) {
         setDueDate(new Date(currentTask.dueDate))
+      } else {
+        setDueDate(undefined)
       }
       setTaskNotFound(false)
     }
   }, [currentTask])
+
+  // Clear current task on unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup function can be added here if needed
+    }
+  }, [])
 
   const handleInputChange = useCallback((field: keyof TaskFormData, value: any) => {
     setFormData(prev => ({
@@ -114,7 +143,7 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.title.trim() || !formData.description.trim()) {
       toast.error("Please fill in all required fields")
       return
@@ -133,10 +162,10 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
       }
 
       const result = await dispatch(updateTask({ taskId: id, taskData }))
-      
+
       if (updateTask.fulfilled.match(result)) {
         toast.success("Task updated successfully!")
-        navigate("/task-management")
+        navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW.replace(":id", id))
       } else {
         toast.error("Failed to update task")
       }
@@ -148,8 +177,24 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
   }, [formData, dueDate, id, dispatch, navigate])
 
   const handleCancel = useCallback(() => {
-    navigate("/task-management")
-  }, [navigate])
+    if (isFormDirty) {
+      const confirmLeave = window.confirm("You have unsaved changes. Are you sure you want to leave?")
+      if (!confirmLeave) return
+    }
+    navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW.replace(":id", id || ""))
+  }, [navigate, isFormDirty])
+
+  const handleReset = useCallback(() => {
+    if (initialFormData) {
+      setFormData(initialFormData)
+      if (currentTask?.dueDate) {
+        setDueDate(new Date(currentTask.dueDate))
+      } else {
+        setDueDate(undefined)
+      }
+      setNewTag("")
+    }
+  }, [initialFormData, currentTask?.dueDate])
 
   return {
     getters: {
@@ -159,7 +204,10 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
       dueDate,
       newTag,
       currentTask,
-      taskNotFound
+      taskNotFound,
+      isFormValid,
+      isFormDirty,
+      error
     },
     handlers: {
       onInputChange: handleInputChange,
@@ -168,7 +216,8 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
       onAddTag: handleAddTag,
       onRemoveTag: handleRemoveTag,
       onSubmit: handleSubmit,
-      onCancel: handleCancel
+      onCancel: handleCancel,
+      onReset: handleReset
     }
   }
 }

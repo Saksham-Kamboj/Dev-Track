@@ -7,15 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, X, Save, Plus } from "lucide-react"
+import { CalendarIcon, X, Save, Plus, Loader2, RotateCcw } from "lucide-react"
 import { format } from "date-fns"
 import { TASK_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from "@/types/task/task.types"
 import { useTaskCreateController } from "./task-create.controller"
 
 export default function TaskCreate() {
   const { getters, handlers } = useTaskCreateController()
-  const { formData, loading, dueDate, newTag } = getters
-  const { onAddTag, onCancel, onDueDateChange, onInputChange, onNewTagChange, onRemoveTag, onSubmit } = handlers
+  const { formData, loading, dueDate, newTag, isFormValid, isFormDirty } = getters
+  const { onAddTag, onCancel, onDueDateChange, onInputChange, onNewTagChange, onRemoveTag, onSubmit, onReset } = handlers
 
   return (
     <div className="container mx-auto py-2 space-y-3">
@@ -215,11 +215,25 @@ export default function TaskCreate() {
                 <div className="flex flex-col gap-2">
                   <Button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !isFormValid}
                     className="w-full"
                   >
-                    <Save className="mr-2 h-4 w-4" />
+                    {loading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="mr-2 h-4 w-4" />
+                    )}
                     {loading ? "Creating..." : "Create Task"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onReset}
+                    disabled={!isFormDirty}
+                    className="w-full"
+                  >
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Reset Form
                   </Button>
                   <Button
                     type="button"

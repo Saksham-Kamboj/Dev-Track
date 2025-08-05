@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import type { TaskData } from "@/types/task/task.types"
 import { getAllTasks, deleteTask } from "@/redux/thunks/task.thunks"
 import { setFilters, clearFilters } from "@/redux/slices/taskSlice"
+import { PAGE_ROUTES } from "@/constants"
 
 interface TaskManagementControllerResponse {
   getters: {
@@ -59,12 +60,12 @@ export const useTaskManagementController = (): TaskManagementControllerResponse 
 
   // Create task handler
   const handleCreateTask = useCallback(() => {
-    navigate('/tasks/create')
+    navigate(PAGE_ROUTES.DEVELOPER.TASK.UPLOAD)
   }, [navigate])
 
   // Edit task handler
   const handleEditTask = useCallback((task: TaskData) => {
-    navigate(`/tasks/edit/${task.id}`)
+    navigate(PAGE_ROUTES.DEVELOPER.TASK.EDIT.replace(":id", task.id))
   }, [navigate])
 
   // Delete task handler
@@ -81,7 +82,7 @@ export const useTaskManagementController = (): TaskManagementControllerResponse 
 
   // View task handler
   const handleViewTask = useCallback((task: TaskData) => {
-    navigate(`/tasks/${task.id}`)
+    navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW.replace(":id", task.id))
   }, [navigate])
 
   // Filter handlers

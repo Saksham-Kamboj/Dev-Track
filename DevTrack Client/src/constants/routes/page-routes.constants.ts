@@ -38,8 +38,9 @@ export const PAGE_ROUTES = {
     TASK: {
       BASE: "/developer/task-management",
       ALL: "/developer/task-management",
-      UPLOAD: "/developer/task-management/upload",
-      VIEW: "/developer/task-management/:id",
+      UPLOAD: "/developer/task-management/create",
+      VIEW: "/developer/task-management/:id/view",
+      EDIT: "/developer/task-management/:id/edit",
     },
     PROFILE: "/developer/profile",
     EDIT_PROFILE: "/developer/profile/edit",

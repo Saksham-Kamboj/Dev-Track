@@ -1,6 +1,3 @@
-import { useState, useEffect } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,141 +7,63 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, X, Save, Plus, Loader2 } from "lucide-react"
+import { CalendarIcon, X, Save, Plus, Loader2, RotateCcw, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
-import { toast } from "sonner"
-import { getTaskById, updateTask } from "@/redux/thunks/task.thunks"
 import { TASK_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from "@/types/task/task.types"
-import type { TaskFormData } from "@/types/task/task.types"
-import { PAGE_ROUTES } from "@/constants"
+import { useTaskEditController } from "./task-edit.controller"
 
 export default function TaskEdit() {
-  const navigate = useNavigate()
-  const dispatch = useAppDispatch()
-  const { id } = useParams<{ id: string }>()
-  const { currentTask, loading } = useAppSelector((state) => state.tasks)
+  const { getters, handlers } = useTaskEditController()
+  const {
+    formData,
+    loading,
+    saving,
+    dueDate,
+    newTag,
+    currentTask,
+    taskNotFound,
+    isFormValid,
+    isFormDirty
+  } = getters
+  const {
+    onInputChange,
+    onDueDateChange,
+    onNewTagChange,
+    onAddTag,
+    onRemoveTag,
+    onSubmit,
+    onCancel,
+    onReset
+  } = handlers
 
-  const [saving, setSaving] = useState(false)
-  const [dueDate, setDueDate] = useState<Date>()
-  const [newTag, setNewTag] = useState("")
-
-  const [formData, setFormData] = useState<TaskFormData>({
-    title: "",
-    description: "",
-    status: "Todo",
-    priority: "Medium",
-    type: "Task",
-    dueDate: "",
-    estimatedHours: undefined,
-    tags: []
-  })
-
-  // Load task data
-  useEffect(() => {
-    if (id) {
-      dispatch(getTaskById(id))
-    }
-  }, [dispatch, id])
-
-  // Populate form when task loads
-  useEffect(() => {
-    if (currentTask) {
-      setFormData({
-        title: currentTask.title,
-        description: currentTask.description,
-        status: currentTask.status,
-        priority: currentTask.priority,
-        type: currentTask.type,
-        dueDate: currentTask.dueDate || "",
-        estimatedHours: currentTask.estimatedHours || undefined,
-        tags: currentTask.tags
-      })
-
-      if (currentTask.dueDate) {
-        setDueDate(new Date(currentTask.dueDate))
-      }
-    }
-  }, [currentTask])
-
-  const handleInputChange = (field: keyof TaskFormData, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
-
-  const handleAddTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, newTag.trim()]
-      }))
-      setNewTag("")
-    }
-  }
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formData.title.trim() || !formData.description.trim()) {
-      toast.error("Please fill in all required fields")
-      return
-    }
-
-    if (!id) {
-      toast.error("Task ID not found")
-      return
-    }
-
-    setSaving(true)
-    try {
-      const taskData = {
-        ...formData,
-        dueDate: dueDate ? dueDate.toISOString() : undefined
-      }
-
-      const result = await dispatch(updateTask({ taskId: id, taskData }))
-
-      if (updateTask.fulfilled.match(result)) {
-        toast.success("Task updated successfully!")
-        navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW)
-      } else {
-        toast.error("Failed to update task")
-      }
-    } catch (error) {
-      toast.error("Failed to update task")
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (loading) {
+  if (loading && !currentTask) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Loading task...</span>
+      <div className="container mx-auto py-6 space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+          <div className="space-y-4">
+            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-24 bg-gray-200 rounded"></div>
+          </div>
         </div>
       </div>
     )
   }
 
-  if (!currentTask) {
+  if (taskNotFound) {
     return (
       <div className="container mx-auto py-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Task Not Found</h1>
-          <Button onClick={() => navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)}>
-            Back to Tasks
-          </Button>
-        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Task not found</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              The task you're trying to edit doesn't exist or you don't have permission to edit it.
+            </p>
+            <Button onClick={onCancel}>Go Back</Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -155,12 +74,12 @@ export default function TaskEdit() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Edit Task</h1>
         <p className="text-muted-foreground">
-          Update task: {currentTask.taskId}
+          Update task: {currentTask?.taskId}
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={onSubmit} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Form */}
           <div className="lg:col-span-2 space-y-6">
@@ -179,7 +98,7 @@ export default function TaskEdit() {
                     id="title"
                     placeholder="Enter task title"
                     value={formData.title}
-                    onChange={(e) => handleInputChange("title", e.target.value)}
+                    onChange={(e) => onInputChange("title", e.target.value)}
                     required
                   />
                 </div>
@@ -191,7 +110,7 @@ export default function TaskEdit() {
                     id="description"
                     placeholder="Describe the task in detail"
                     value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    onChange={(e) => onInputChange("description", e.target.value)}
                     rows={4}
                     required
                   />
@@ -204,14 +123,14 @@ export default function TaskEdit() {
                     <Input
                       placeholder="Add a tag"
                       value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
+                      onChange={(e) => onNewTagChange(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), onAddTag())}
                     />
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={handleAddTag}
+                      onClick={onAddTag}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -223,7 +142,7 @@ export default function TaskEdit() {
                           {tag}
                           <X
                             className="h-3 w-3 cursor-pointer"
-                            onClick={() => handleRemoveTag(tag)}
+                            onClick={() => onRemoveTag(tag)}
                           />
                         </Badge>
                       ))}
@@ -246,7 +165,7 @@ export default function TaskEdit() {
                   <Label>Status</Label>
                   <Select
                     value={formData.status}
-                    onValueChange={(value) => handleInputChange("status", value)}
+                    onValueChange={(value) => onInputChange("status", value)}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue />
@@ -266,7 +185,7 @@ export default function TaskEdit() {
                   <Label>Priority</Label>
                   <Select
                     value={formData.priority}
-                    onValueChange={(value) => handleInputChange("priority", value)}
+                    onValueChange={(value) => onInputChange("priority", value)}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue />
@@ -286,7 +205,7 @@ export default function TaskEdit() {
                   <Label>Type</Label>
                   <Select
                     value={formData.type}
-                    onValueChange={(value) => handleInputChange("type", value)}
+                    onValueChange={(value) => onInputChange("type", value)}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue />
@@ -311,7 +230,7 @@ export default function TaskEdit() {
                     step="0.5"
                     placeholder="0"
                     value={formData.estimatedHours || ""}
-                    onChange={(e) => handleInputChange("estimatedHours", e.target.value ? Number(e.target.value) : undefined)}
+                    onChange={(e) => onInputChange("estimatedHours", e.target.value ? Number(e.target.value) : undefined)}
                   />
                 </div>
 
@@ -332,7 +251,7 @@ export default function TaskEdit() {
                       <Calendar
                         mode="single"
                         selected={dueDate}
-                        onSelect={setDueDate}
+                        onSelect={onDueDateChange}
                         initialFocus
                       />
                     </PopoverContent>
@@ -347,16 +266,30 @@ export default function TaskEdit() {
                 <div className="flex flex-col gap-2">
                   <Button
                     type="submit"
-                    disabled={saving}
+                    disabled={saving || !isFormValid}
                     className="w-full"
                   >
-                    <Save className="mr-2 h-4 w-4" />
+                    {saving ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="mr-2 h-4 w-4" />
+                    )}
                     {saving ? "Saving..." : "Save Changes"}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate(PAGE_ROUTES.DEVELOPER.TASK.VIEW)}
+                    onClick={onReset}
+                    disabled={!isFormDirty}
+                    className="w-full"
+                  >
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Reset Changes
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onCancel}
                     className="w-full"
                   >
                     Cancel

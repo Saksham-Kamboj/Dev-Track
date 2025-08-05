@@ -173,17 +173,17 @@ const createDeveloperRoutes = () => [
   />,
   <Route
     key="task-create"
-    path="/tasks/create"
+    path={PAGE_ROUTES.DEVELOPER.TASK.UPLOAD}
     element={createProtectedRoute(TaskCreate)}
   />,
   <Route
     key="task-edit"
-    path="/tasks/edit/:id"
+    path={PAGE_ROUTES.DEVELOPER.TASK.EDIT}
     element={createProtectedRoute(TaskEdit)}
   />,
   <Route
     key="task-view"
-    path="/tasks/:id"
+    path={PAGE_ROUTES.DEVELOPER.TASK.VIEW}
     element={createProtectedRoute(TaskView)}
   />,
   <Route

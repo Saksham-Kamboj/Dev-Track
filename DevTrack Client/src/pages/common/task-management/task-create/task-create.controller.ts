@@ -1,10 +1,9 @@
-import { useState, useCallback } from "react"
+import { useState, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { useAppDispatch } from "@/redux/hooks"
+import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { toast } from "sonner"
-import { createTask } from "@/redux/thunks/task.thunks"
+import { createTask, getAllTasks } from "@/redux/thunks/task.thunks"
 import type { TaskFormData } from "@/types/task/task.types"
-import { PAGE_ROUTES } from "@/constants"
 
 interface TaskCreateControllerResponse {
   getters: {
@@ -12,6 +11,9 @@ interface TaskCreateControllerResponse {
     loading: boolean
     dueDate: Date | undefined
     newTag: string
+    isFormValid: boolean
+    isFormDirty: boolean
+    error: string | null
   }
   handlers: {
     onInputChange: (field: keyof TaskFormData, value: any) => void
@@ -21,18 +23,20 @@ interface TaskCreateControllerResponse {
     onRemoveTag: (tag: string) => void
     onSubmit: (e: React.FormEvent) => void
     onCancel: () => void
+    onReset: () => void
   }
 }
 
 export const useTaskCreateController = (): TaskCreateControllerResponse => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  
+  const { error } = useAppSelector((state) => state.tasks)
+
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date>()
   const [newTag, setNewTag] = useState("")
-  
-  const [formData, setFormData] = useState<TaskFormData>({
+
+  const initialFormData: TaskFormData = {
     title: "",
     description: "",
     status: "Todo",
@@ -41,7 +45,19 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
     dueDate: "",
     estimatedHours: undefined,
     tags: []
-  })
+  }
+
+  const [formData, setFormData] = useState<TaskFormData>(initialFormData)
+
+  // Memoized computed values
+  const isFormValid = useMemo(() => {
+    return formData.title.trim().length > 0 && formData.description.trim().length > 0
+  }, [formData.title, formData.description])
+
+  const isFormDirty = useMemo(() => {
+    return JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
+      dueDate !== undefined
+  }, [formData, dueDate])
 
   const handleInputChange = useCallback((field: keyof TaskFormData, value: any) => {
     setFormData(prev => ({
@@ -77,8 +93,8 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!formData.title.trim() || !formData.description.trim()) {
+
+    if (!isFormValid) {
       toast.error("Please fill in all required fields")
       return
     }
@@ -91,30 +107,54 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
       }
 
       const result = await dispatch(createTask(taskData))
-      
+
       if (createTask.fulfilled.match(result)) {
         toast.success("Task created successfully!")
-        navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
+
+        // Refresh the tasks list
+        dispatch(getAllTasks({
+          page: 1,
+          limit: 10,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        }))
+
+        navigate("/task-management")
       } else {
-        toast.error("Failed to create task")
+        const errorMessage = result.payload as string || "Failed to create task"
+        toast.error(errorMessage)
       }
     } catch (error) {
+      console.error("Create task error:", error)
       toast.error("Failed to create task")
     } finally {
       setLoading(false)
     }
-  }, [formData, dueDate, dispatch, navigate])
+  }, [formData, dueDate, dispatch, navigate, isFormValid])
 
   const handleCancel = useCallback(() => {
-    navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
-  }, [navigate])
+    if (isFormDirty) {
+      const confirmLeave = window.confirm("You have unsaved changes. Are you sure you want to leave?")
+      if (!confirmLeave) return
+    }
+    navigate("/task-management")
+  }, [navigate, isFormDirty])
+
+  const handleReset = useCallback(() => {
+    setFormData(initialFormData)
+    setDueDate(undefined)
+    setNewTag("")
+  }, [])
 
   return {
     getters: {
       formData,
       loading,
       dueDate,
-      newTag
+      newTag,
+      isFormValid,
+      isFormDirty,
+      error
     },
     handlers: {
       onInputChange: handleInputChange,
@@ -123,7 +163,8 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
       onAddTag: handleAddTag,
       onRemoveTag: handleRemoveTag,
       onSubmit: handleSubmit,
-      onCancel: handleCancel
+      onCancel: handleCancel,
+      onReset: handleReset
     }
   }
 }
