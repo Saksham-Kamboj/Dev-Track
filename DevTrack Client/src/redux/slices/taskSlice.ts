@@ -24,9 +24,9 @@ interface TaskState {
     pages: number
   } | null
   filters: {
-    status: string[]
-    priority: string[]
-    type: string[]
+    status: string | null
+    priority: string | null
+    type: string | null
     search: string
     assignedTo?: string
   }
@@ -41,9 +41,9 @@ const initialState: TaskState = {
   error: null,
   pagination: null,
   filters: {
-    status: [],
-    priority: [],
-    type: [],
+    status: null,
+    priority: null,
+    type: null,
     search: '',
     assignedTo: undefined
   },
@@ -92,9 +92,9 @@ const taskSlice = createSlice({
     },
     clearFilters: (state) => {
       state.filters = {
-        status: [],
-        priority: [],
-        type: [],
+        status: null,
+        priority: null,
+        type: null,
         search: '',
         assignedTo: undefined
       }

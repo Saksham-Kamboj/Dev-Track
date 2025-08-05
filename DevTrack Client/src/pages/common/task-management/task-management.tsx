@@ -139,43 +139,44 @@ export default function TaskManagement() {
                                             variant="outline"
                                             className="w-full justify-between"
                                         >
-                                            {filters.status.length === 0
+                                            {!filters.status
                                                 ? "All Statuses"
-                                                : filters.status.length === 1
-                                                    ? filters.status[0]
-                                                    : `${filters.status.length} selected`
+                                                : filters.status
                                             }
                                             <ChevronDown className="h-4 w-4 opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0 select-none" align="start">
                                         <div className="p-2">
-                                            <div className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                            <div className="flex items-center space-x-2 p-2 rounded dark:hover:bg-background/50">
                                                 <Checkbox
                                                     id="status-all"
-                                                    checked={filters.status.length === 0}
-                                                    onCheckedChange={() => handlers.onStatusFilter([])}
+                                                    checked={!filters.status}
+                                                    onCheckedChange={() => handlers.onStatusFilter(null)}
                                                 />
-                                                <label htmlFor="status-all" className="text-sm font-medium cursor-pointer">
+                                                <label htmlFor="status-all" className="text-sm font-medium cursor-pointer flex-1">
                                                     All Statuses
                                                 </label>
                                             </div>
                                             {TASK_STATUS_OPTIONS.map((option) => (
-                                                <div key={option.value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                                <div key={option.value} className="flex items-center space-x-2 p-2 rounded dark:hover:bg-background/50">
                                                     <Checkbox
                                                         id={`status-${option.value}`}
-                                                        checked={filters.status.includes(option.value)}
+                                                        checked={filters.status === option.value}
                                                         onCheckedChange={(checked) => {
                                                             if (checked) {
-                                                                handlers.onStatusFilter([...filters.status, option.value])
+                                                                handlers.onStatusFilter(option.value)
                                                             } else {
-                                                                handlers.onStatusFilter(filters.status.filter(s => s !== option.value))
+                                                                handlers.onStatusFilter(null)
                                                             }
                                                         }}
                                                     />
-                                                    <label htmlFor={`status-${option.value}`} className="text-sm cursor-pointer">
+                                                    <label htmlFor={`status-${option.value}`} className="text-sm cursor-pointer flex-1">
                                                         {option.label}
                                                     </label>
+                                                    <div className="flex items-center gap-1">
+                                                        {getStatusIcon(option.value)}
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -192,43 +193,44 @@ export default function TaskManagement() {
                                             variant="outline"
                                             className="w-full justify-between"
                                         >
-                                            {filters.priority.length === 0
+                                            {!filters.priority
                                                 ? "All Priorities"
-                                                : filters.priority.length === 1
-                                                    ? filters.priority[0]
-                                                    : `${filters.priority.length} selected`
+                                                : filters.priority
                                             }
                                             <ChevronDown className="h-4 w-4 opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0 select-none" align="start">
                                         <div className="p-2">
-                                            <div className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                            <div className="flex items-center space-x-2 p-2 rounded dark:hover:bg-background/50">
                                                 <Checkbox
                                                     id="priority-all"
-                                                    checked={filters.priority.length === 0}
-                                                    onCheckedChange={() => handlers.onPriorityFilter([])}
+                                                    checked={!filters.priority}
+                                                    onCheckedChange={() => handlers.onPriorityFilter(null)}
                                                 />
-                                                <label htmlFor="priority-all" className="text-sm font-medium cursor-pointer">
+                                                <label htmlFor="priority-all" className="text-sm font-medium cursor-pointer flex-1">
                                                     All Priorities
                                                 </label>
                                             </div>
                                             {TASK_PRIORITY_OPTIONS.map((option) => (
-                                                <div key={option.value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                                <div key={option.value} className="flex items-center space-x-2 p-2 rounded dark:hover:bg-background/50">
                                                     <Checkbox
                                                         id={`priority-${option.value}`}
-                                                        checked={filters.priority.includes(option.value)}
+                                                        checked={filters.priority === option.value}
                                                         onCheckedChange={(checked) => {
                                                             if (checked) {
-                                                                handlers.onPriorityFilter([...filters.priority, option.value])
+                                                                handlers.onPriorityFilter(option.value)
                                                             } else {
-                                                                handlers.onPriorityFilter(filters.priority.filter(p => p !== option.value))
+                                                                handlers.onPriorityFilter(null)
                                                             }
                                                         }}
                                                     />
-                                                    <label htmlFor={`priority-${option.value}`} className="text-sm cursor-pointer">
+                                                    <label htmlFor={`priority-${option.value}`} className="text-sm cursor-pointer flex-1">
                                                         {option.label}
                                                     </label>
+                                                    <Badge variant="outline" className={`${getPriorityColor(option.value)} text-xs px-2 py-0`}>
+                                                        {option.value}
+                                                    </Badge>
                                                 </div>
                                             ))}
                                         </div>
@@ -245,43 +247,44 @@ export default function TaskManagement() {
                                             variant="outline"
                                             className="w-full justify-between"
                                         >
-                                            {filters.type.length === 0
+                                            {!filters.type
                                                 ? "All Types"
-                                                : filters.type.length === 1
-                                                    ? filters.type[0]
-                                                    : `${filters.type.length} selected`
+                                                : filters.type
                                             }
                                             <ChevronDown className="h-4 w-4 opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0 select-none" align="start">
                                         <div className="p-2">
-                                            <div className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                            <div className="flex items-center space-x-2 p-2 rounded dark:hover:bg-background/50">
                                                 <Checkbox
                                                     id="type-all"
-                                                    checked={filters.type.length === 0}
-                                                    onCheckedChange={() => handlers.onTypeFilter([])}
+                                                    checked={!filters.type}
+                                                    onCheckedChange={() => handlers.onTypeFilter(null)}
                                                 />
-                                                <label htmlFor="type-all" className="text-sm font-medium cursor-pointer">
+                                                <label htmlFor="type-all" className="text-sm font-medium cursor-pointer flex-1">
                                                     All Types
                                                 </label>
                                             </div>
                                             {TASK_TYPE_OPTIONS.map((option) => (
-                                                <div key={option.value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                                <div key={option.value} className="flex items-center space-x-2 p-2 rounded dark:hover:bg-background/50">
                                                     <Checkbox
                                                         id={`type-${option.value}`}
-                                                        checked={filters.type.includes(option.value)}
+                                                        checked={filters.type === option.value}
                                                         onCheckedChange={(checked) => {
                                                             if (checked) {
-                                                                handlers.onTypeFilter([...filters.type, option.value])
+                                                                handlers.onTypeFilter(option.value)
                                                             } else {
-                                                                handlers.onTypeFilter(filters.type.filter(t => t !== option.value))
+                                                                handlers.onTypeFilter(null)
                                                             }
                                                         }}
                                                     />
-                                                    <label htmlFor={`type-${option.value}`} className="text-sm cursor-pointer">
+                                                    <label htmlFor={`type-${option.value}`} className="text-sm cursor-pointer flex-1">
                                                         {option.label}
                                                     </label>
+                                                    <Badge variant="outline" className={`${getTypeColor(option.value)} text-xs px-2 py-0`}>
+                                                        {option.value}
+                                                    </Badge>
                                                 </div>
                                             ))}
                                         </div>
@@ -294,9 +297,9 @@ export default function TaskManagement() {
                 <CardFooter className="p-0">
                     {/* Active Filters Summary */}
                     {(filters.search ||
-                        filters.status.length > 0 ||
-                        filters.priority.length > 0 ||
-                        filters.type.length > 0) && (
+                        filters.status ||
+                        filters.priority ||
+                        filters.type) && (
                             <div className="mt-2 space-y-1 w-full">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium">Active Filters:</span>
@@ -314,33 +317,33 @@ export default function TaskManagement() {
                                             />
                                         </Badge>
                                     )}
-                                    {filters.status.map(status => (
-                                        <Badge key={status} variant="secondary" className="flex items-center gap-1">
-                                            Status: {status}
+                                    {filters.status && (
+                                        <Badge variant="secondary" className="flex items-center gap-1">
+                                            Status: {filters.status}
                                             <X
                                                 className="h-3 w-3 cursor-pointer"
-                                                onClick={() => handlers.onStatusFilter(filters.status.filter(s => s !== status))}
+                                                onClick={() => handlers.onStatusFilter(null)}
                                             />
                                         </Badge>
-                                    ))}
-                                    {filters.priority.map(priority => (
-                                        <Badge key={priority} variant="secondary" className="flex items-center gap-1">
-                                            Priority: {priority}
+                                    )}
+                                    {filters.priority && (
+                                        <Badge variant="secondary" className="flex items-center gap-1">
+                                            Priority: {filters.priority}
                                             <X
                                                 className="h-3 w-3 cursor-pointer"
-                                                onClick={() => handlers.onPriorityFilter(filters.priority.filter(p => p !== priority))}
+                                                onClick={() => handlers.onPriorityFilter(null)}
                                             />
                                         </Badge>
-                                    ))}
-                                    {filters.type.map(type => (
-                                        <Badge key={type} variant="secondary" className="flex items-center gap-1">
-                                            Type: {type}
+                                    )}
+                                    {filters.type && (
+                                        <Badge variant="secondary" className="flex items-center gap-1">
+                                            Type: {filters.type}
                                             <X
                                                 className="h-3 w-3 cursor-pointer"
-                                                onClick={() => handlers.onTypeFilter(filters.type.filter(t => t !== type))}
+                                                onClick={() => handlers.onTypeFilter(null)}
                                             />
                                         </Badge>
-                                    ))}
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -358,9 +361,9 @@ export default function TaskManagement() {
                                 <h3 className="text-lg font-semibold mb-2">No tasks found</h3>
                                 <p className="text-muted-foreground text-center mb-4">
                                     {filters.search ||
-                                        filters.status.length > 0 ||
-                                        filters.priority.length > 0 ||
-                                        filters.type.length > 0
+                                        filters.status ||
+                                        filters.priority ||
+                                        filters.type
                                         ? "No tasks match your current filters. Try adjusting your search criteria."
                                         : "Get started by creating your first task."}
                                 </p>
