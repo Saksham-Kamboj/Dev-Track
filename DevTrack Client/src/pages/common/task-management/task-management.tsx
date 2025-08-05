@@ -150,7 +150,7 @@ export default function TaskManagement() {
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0 select-none" align="start">
                                         <div className="p-2">
-                                            <div className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                            <div className="flex items-center space-x-2 p-2 rounded">
                                                 <Checkbox
                                                     id="status-all"
                                                     checked={filters.status.length === 0}
@@ -161,7 +161,7 @@ export default function TaskManagement() {
                                                 </label>
                                             </div>
                                             {TASK_STATUS_OPTIONS.map((option) => (
-                                                <div key={option.value} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
+                                                <div key={option.value} className="flex items-center space-x-2 p-2 rounded">
                                                     <Checkbox
                                                         id={`status-${option.value}`}
                                                         checked={filters.status.includes(option.value)}
