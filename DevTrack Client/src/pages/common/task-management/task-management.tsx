@@ -7,6 +7,13 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -29,12 +36,13 @@ import {
     Eye,
     Edit,
     Trash2,
-    ChevronDown
+    ChevronDown,
+    UserCheck,
+    Flag,
+    Settings
 } from "lucide-react"
 import { TASK_STATUS_OPTIONS, TASK_PRIORITY_OPTIONS, TASK_TYPE_OPTIONS } from "@/types/task/task.types"
 import { useTaskManagementController } from "./task-management.controller"
-import { Link } from "react-router-dom"
-import { PAGE_ROUTES } from "@/constants"
 
 /**
  * Task Management Page Component
@@ -42,7 +50,18 @@ import { PAGE_ROUTES } from "@/constants"
  */
 export default function TaskManagement() {
     const { getters, handlers } = useTaskManagementController()
-    const { title, description, tasks, pagination, filters } = getters
+    const {
+        title,
+        description,
+        tasks,
+        pagination,
+        filters,
+        isAdmin,
+        developers,
+        canCreateTasks,
+        canEditAllTasks,
+        canDeleteTasks
+    } = getters
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -96,10 +115,12 @@ export default function TaskManagement() {
                         {description}
                     </p>
                 </div>
-                <Button onClick={handlers.onCreateTask} className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    New Task
-                </Button>
+                {canCreateTasks && (
+                    <Button onClick={handlers.onCreateTask} className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" />
+                        New Task
+                    </Button>
+                )}
             </div>
 
             {/* Filters and Search */}
@@ -115,7 +136,7 @@ export default function TaskManagement() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="p-0 w-full">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4`}>
                             {/* Search */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Search</label>
@@ -291,6 +312,29 @@ export default function TaskManagement() {
                                     </PopoverContent>
                                 </Popover>
                             </div>
+
+                            {/* Assigned To Filter - Admin Only */}
+                            {isAdmin && (
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Assigned To</label>
+                                    <Select
+                                        value={filters.assignedTo || "all"}
+                                        onValueChange={(value) => handlers.onAssignedToFilter(value === "all" ? null : value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="All Developers" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Developers</SelectItem>
+                                            {developers.map((dev) => (
+                                                <SelectItem key={dev.id} value={dev.id}>
+                                                    {dev.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </div>
@@ -299,7 +343,8 @@ export default function TaskManagement() {
                     {(filters.search ||
                         filters.status ||
                         filters.priority ||
-                        filters.type) && (
+                        filters.type ||
+                        filters.assignedTo) && (
                             <div className="mt-2 space-y-1 w-full">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium">Active Filters:</span>
@@ -344,6 +389,15 @@ export default function TaskManagement() {
                                             />
                                         </Badge>
                                     )}
+                                    {filters.assignedTo && (
+                                        <Badge variant="secondary" className="flex items-center gap-1">
+                                            Assigned: {developers.find(d => d.id === filters.assignedTo)?.name || 'Unknown'}
+                                            <X
+                                                className="h-3 w-3 cursor-pointer"
+                                                onClick={() => handlers.onAssignedToFilter(null)}
+                                            />
+                                        </Badge>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -363,14 +417,17 @@ export default function TaskManagement() {
                                     {filters.search ||
                                         filters.status ||
                                         filters.priority ||
-                                        filters.type
+                                        filters.type ||
+                                        filters.assignedTo
                                         ? "No tasks match your current filters. Try adjusting your search criteria."
                                         : "Get started by creating your first task."}
                                 </p>
-                                <Button onClick={handlers.onCreateTask}>
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Create Task
-                                </Button>
+                                {canCreateTasks && (
+                                    <Button onClick={handlers.onCreateTask}>
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Create Task
+                                    </Button>
+                                )}
                             </CardContent>
                         </Card>
                     </div>
@@ -382,9 +439,12 @@ export default function TaskManagement() {
                                 <div className="flex items-start justify-between">
                                     <div className="space-y-1">
                                         <CardTitle className="text-lg leading-tight text-primary">
-                                            <Link to={PAGE_ROUTES.DEVELOPER.TASK.VIEW.replace(":id", task.id)}>
-                                                {task.title.length > 50 ? task.title.slice(0, 50) + '...' : task.title}
-                                            </Link>
+                                            <button
+                                                onClick={() => handlers.onViewTask(task)}
+                                                className="text-left hover:underline focus:outline-none"
+                                            >
+                                                {task.title.length > 30 ? task.title.slice(0, 30) + '...' : task.title}
+                                            </button>
                                         </CardTitle>
                                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                             <span>{task.taskId}</span>
@@ -406,22 +466,60 @@ export default function TaskManagement() {
                                                 <Eye className="mr-2 h-4 w-4" />
                                                 View
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handlers.onEditTask(task)}>
-                                                <Edit className="mr-2 h-4 w-4" />
-                                                Edit
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                                onClick={() => {
-                                                    if (window.confirm(`Are you sure you want to delete "${task.title}"? This action cannot be undone.`)) {
-                                                        handlers.onDeleteTask(task.id)
-                                                    }
-                                                }}
-                                                className="text-red-600 focus:text-red-600"
-                                            >
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                Delete
-                                            </DropdownMenuItem>
+                                            {canEditAllTasks && (
+                                                <DropdownMenuItem onClick={() => handlers.onEditTask(task)}>
+                                                    <Edit className="mr-2 h-4 w-4" />
+                                                    Edit
+                                                </DropdownMenuItem>
+                                            )}
+
+                                            {/* Admin-specific actions */}
+                                            {isAdmin && (
+                                                <>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            // Quick assign functionality can be added here
+                                                        }}
+                                                    >
+                                                        <UserCheck className="mr-2 h-4 w-4" />
+                                                        Assign
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            // Quick status update can be added here
+                                                        }}
+                                                    >
+                                                        <Settings className="mr-2 h-4 w-4" />
+                                                        Update Status
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            // Quick priority update can be added here
+                                                        }}
+                                                    >
+                                                        <Flag className="mr-2 h-4 w-4" />
+                                                        Update Priority
+                                                    </DropdownMenuItem>
+                                                </>
+                                            )}
+
+                                            {canDeleteTasks && (
+                                                <>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            if (window.confirm(`Are you sure you want to delete "${task.title}"? This action cannot be undone.`)) {
+                                                                handlers.onDeleteTask(task.id)
+                                                            }
+                                                        }}
+                                                        className="text-red-600 focus:text-red-600"
+                                                    >
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Delete
+                                                    </DropdownMenuItem>
+                                                </>
+                                            )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>

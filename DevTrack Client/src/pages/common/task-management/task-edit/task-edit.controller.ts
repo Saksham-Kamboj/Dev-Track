@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { toast } from "sonner"
 import { getTaskById, updateTask } from "@/redux/thunks/task.thunks"
+import { PAGE_ROUTES } from "@/constants"
 import type { TaskFormData, TaskData } from "@/types/task/task.types"
 
 interface TaskEditControllerResponse {
@@ -35,6 +36,11 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
   const dispatch = useAppDispatch()
   const { id } = useParams<{ id: string }>()
   const { currentTask, loading, error } = useAppSelector((state) => state.tasks)
+  const { user } = useAppSelector((state) => state.auth)
+
+  // Role-based properties
+  const userRole = user?.role || 'developer'
+  const isAdmin = userRole === 'admin'
 
   const [saving, setSaving] = useState(false)
   const [dueDate, setDueDate] = useState<Date>()
@@ -164,7 +170,12 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
 
       if (updateTask.fulfilled.match(result)) {
         toast.success("Task updated successfully!")
-        navigate(-1)
+        // Navigate back to task list based on role
+        if (isAdmin) {
+          navigate(PAGE_ROUTES.ADMIN.TASK.ALL)
+        } else {
+          navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
+        }
       } else {
         toast.error("Failed to update task")
       }
@@ -173,15 +184,20 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
     } finally {
       setSaving(false)
     }
-  }, [formData, dueDate, id, dispatch, navigate])
+  }, [formData, dueDate, id, dispatch, navigate, isAdmin])
 
   const handleCancel = useCallback(() => {
     if (isFormDirty) {
       const confirmLeave = window.confirm("You have unsaved changes. Are you sure you want to leave?")
       if (!confirmLeave) return
     }
-    navigate(-1)
-  }, [navigate, isFormDirty])
+    // Navigate back to task list based on role
+    if (isAdmin) {
+      navigate(PAGE_ROUTES.ADMIN.TASK.ALL)
+    } else {
+      navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
+    }
+  }, [navigate, isFormDirty, isAdmin])
 
   const handleReset = useCallback(() => {
     if (initialFormData) {

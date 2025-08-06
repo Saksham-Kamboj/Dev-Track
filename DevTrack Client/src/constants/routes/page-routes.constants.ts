@@ -13,6 +13,13 @@ export const PAGE_ROUTES = {
     USER_MANAGEMENT: "/admin/user-management",
     USER_MANAGEMENT_ADD_USER: "/admin/user-management/add-user",
     USER_MANAGEMENT_EDIT_USER: "/admin/user-management/edit-user/:id",
+    TASK: {
+      BASE: "/admin/task-management",
+      ALL: "/admin/task-management",
+      UPLOAD: "/admin/task-management/create",
+      VIEW: "/admin/task-management/:id",
+      EDIT: "/admin/task-management/:id/edit",
+    },
     DOCUMENTS: {
       BASE: "/admin/document-management",
       ALL: "/admin/document-management",
@@ -39,7 +46,7 @@ export const PAGE_ROUTES = {
       BASE: "/developer/task-management",
       ALL: "/developer/task-management",
       UPLOAD: "/developer/task-management/create",
-      VIEW: "/developer/task-management/:id/view",
+      VIEW: "/developer/task-management/:id",
       EDIT: "/developer/task-management/:id/edit",
     },
     PROFILE: "/developer/profile",

@@ -3,6 +3,7 @@ export const REDUX_CONSTANTS = {
   SLICE_NAMES: {
     AUTH: 'auth',
     ADMIN: 'admin',
+    ADMIN_TASKS: 'adminTasks',
     DEVELOPER: 'developer',
     TABLE: 'table',
     TASKS: 'tasks',

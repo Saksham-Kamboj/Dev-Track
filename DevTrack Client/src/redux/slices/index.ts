@@ -74,6 +74,27 @@ export {
 
 // Export thunks
 export * from "../thunks/admin.thunks";
-export * from "../thunks/developer.thunks";
+export * from "../thunks/admin-task.thunks";
 export * from "../thunks/profile.thunks";
 export * from "../thunks/table.thunks";
+
+// Export developer thunks with specific names to avoid conflicts
+export {
+    getDeveloperDashboardData,
+    getTasks as getDeveloperTasks,
+    getTaskById as getDeveloperTaskById,
+    createTask as createDeveloperTask,
+    updateTask as updateDeveloperTask,
+    deleteTask as deleteDeveloperTask
+} from "../thunks/developer.thunks";
+
+// Export common task thunks (used by both admin and developer)
+export {
+    getAllTasks,
+    getTaskById,
+    createTask,
+    updateTask,
+    deleteTask,
+    updateTaskStatus,
+    updateTaskPriority
+} from "../thunks/task.thunks";

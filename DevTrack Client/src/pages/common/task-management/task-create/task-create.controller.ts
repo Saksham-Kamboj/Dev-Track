@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { toast } from "sonner"
 import { createTask, getAllTasks } from "@/redux/thunks/task.thunks"
+import { PAGE_ROUTES } from "@/constants"
 import type { TaskFormData } from "@/types/task/task.types"
 
 interface TaskCreateControllerResponse {
@@ -31,6 +32,11 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { error } = useAppSelector((state) => state.tasks)
+  const { user } = useAppSelector((state) => state.auth)
+
+  // Role-based properties
+  const userRole = user?.role || 'developer'
+  const isAdmin = userRole === 'admin'
 
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date>()
@@ -119,7 +125,12 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
           sortOrder: 'desc'
         }))
 
-        navigate(-1)
+        // Navigate back to task list based on role
+        if (isAdmin) {
+          navigate(PAGE_ROUTES.ADMIN.TASK.ALL)
+        } else {
+          navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
+        }
       } else {
         const errorPayload = result.payload as { message: string; code?: string; retry?: boolean }
         const errorMessage = errorPayload?.message || "Failed to create task"
@@ -136,15 +147,20 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
     } finally {
       setLoading(false)
     }
-  }, [formData, dueDate, dispatch, navigate, isFormValid])
+  }, [formData, dueDate, dispatch, navigate, isFormValid, isAdmin])
 
   const handleCancel = useCallback(() => {
     if (isFormDirty) {
       const confirmLeave = window.confirm("You have unsaved changes. Are you sure you want to leave?")
       if (!confirmLeave) return
     }
-    navigate(-1)
-  }, [navigate, isFormDirty])
+    // Navigate back to task list based on role
+    if (isAdmin) {
+      navigate(PAGE_ROUTES.ADMIN.TASK.ALL)
+    } else {
+      navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
+    }
+  }, [navigate, isFormDirty, isAdmin])
 
   const handleReset = useCallback(() => {
     setFormData(initialFormData)

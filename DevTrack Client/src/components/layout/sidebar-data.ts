@@ -2,6 +2,7 @@ import { PAGE_ROUTES } from "@/constants";
 import {
   LayoutDashboard,
   FileText,
+  CheckSquare,
   // BarChart2,
   // Map,
   User,
@@ -52,6 +53,11 @@ export const adminMenuItems: IMenuItem[] = [
     title: "User Management",
     path: PAGE_ROUTES.ADMIN.USER_MANAGEMENT,
     icon: ShieldUser,
+  },
+  {
+    title: "Task Management",
+    path: PAGE_ROUTES.ADMIN.TASK.ALL,
+    icon: CheckSquare,
   },
   // {
   //   title: "Document Management",
