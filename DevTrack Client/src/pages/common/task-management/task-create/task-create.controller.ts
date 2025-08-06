@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { toast } from "sonner"
 import { createTask, getAllTasks } from "@/redux/thunks/task.thunks"
+import { adminGetDevelopers } from "@/redux/thunks/admin-task.thunks"
 import { PAGE_ROUTES } from "@/constants"
 import type { TaskFormData } from "@/types/task/task.types"
 
@@ -15,6 +16,9 @@ interface TaskCreateControllerResponse {
     isFormValid: boolean
     isFormDirty: boolean
     error: string | null
+    // Role-based properties
+    isAdmin: boolean
+    developers: Array<{ id: string; name: string; email: string }>
   }
   handlers: {
     onInputChange: (field: keyof TaskFormData, value: any) => void
@@ -33,6 +37,7 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
   const dispatch = useAppDispatch()
   const { error } = useAppSelector((state) => state.tasks)
   const { user } = useAppSelector((state) => state.auth)
+  const { developers } = useAppSelector((state) => state.adminTasks)
 
   // Role-based properties
   const userRole = user?.role || 'developer'
@@ -50,8 +55,16 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
     type: "Task",
     dueDate: "",
     estimatedHours: undefined,
-    tags: []
+    tags: [],
+    assignedTo: undefined
   }
+
+  // Load developers for admin users
+  useEffect(() => {
+    if (isAdmin && developers.length === 0) {
+      dispatch(adminGetDevelopers())
+    }
+  }, [dispatch, isAdmin, developers.length])
 
   const [formData, setFormData] = useState<TaskFormData>(initialFormData)
 
@@ -176,7 +189,10 @@ export const useTaskCreateController = (): TaskCreateControllerResponse => {
       newTag,
       isFormValid,
       isFormDirty,
-      error
+      error,
+      // Role-based properties
+      isAdmin,
+      developers
     },
     handlers: {
       onInputChange: handleInputChange,

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "@/redux/hooks"
 import { toast } from "sonner"
 import { getTaskById, updateTask } from "@/redux/thunks/task.thunks"
+import { adminGetDevelopers } from "@/redux/thunks/admin-task.thunks"
 import { PAGE_ROUTES } from "@/constants"
 import type { TaskFormData, TaskData } from "@/types/task/task.types"
 
@@ -18,6 +19,9 @@ interface TaskEditControllerResponse {
     isFormValid: boolean
     isFormDirty: boolean
     error: string | null
+    // Role-based properties
+    isAdmin: boolean
+    developers: Array<{ id: string; name: string; email: string }>
   }
   handlers: {
     onInputChange: (field: keyof TaskFormData, value: any) => void
@@ -37,6 +41,7 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
   const { id } = useParams<{ id: string }>()
   const { currentTask, loading, error } = useAppSelector((state) => state.tasks)
   const { user } = useAppSelector((state) => state.auth)
+  const { developers } = useAppSelector((state) => state.adminTasks)
 
   // Role-based properties
   const userRole = user?.role || 'developer'
@@ -92,7 +97,8 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
         type: currentTask.type,
         dueDate: currentTask.dueDate || "",
         estimatedHours: currentTask.estimatedHours || undefined,
-        tags: currentTask.tags || []
+        tags: currentTask.tags || [],
+        assignedTo: currentTask.assignedTo?._id || undefined
       }
 
       setFormData(newFormData)
@@ -106,6 +112,13 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
       setTaskNotFound(false)
     }
   }, [currentTask])
+
+  // Load developers for admin users
+  useEffect(() => {
+    if (isAdmin && developers.length === 0) {
+      dispatch(adminGetDevelopers())
+    }
+  }, [dispatch, isAdmin, developers.length])
 
   // Clear current task on unmount
   useEffect(() => {
@@ -222,7 +235,10 @@ export const useTaskEditController = (): TaskEditControllerResponse => {
       taskNotFound,
       isFormValid,
       isFormDirty,
-      error
+      error,
+      // Role-based properties
+      isAdmin,
+      developers
     },
     handlers: {
       onInputChange: handleInputChange,

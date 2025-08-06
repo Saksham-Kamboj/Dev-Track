@@ -23,7 +23,9 @@ export default function TaskEdit() {
     currentTask,
     taskNotFound,
     isFormValid,
-    isFormDirty
+    isFormDirty,
+    isAdmin,
+    developers
   } = getters
   const {
     onInputChange,
@@ -204,6 +206,29 @@ export default function TaskEdit() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Assigned To - Admin Only */}
+                {isAdmin && (
+                  <div className="space-y-2 col-span-12">
+                    <Label>Assign To</Label>
+                    <Select
+                      value={formData.assignedTo || "unassigned"}
+                      onValueChange={(value) => onInputChange("assignedTo", value === "unassigned" ? undefined : value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a developer (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {developers.map((dev) => (
+                          <SelectItem key={dev.id} value={dev.id}>
+                            {dev.name} ({dev.email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Estimated Hours */}
                 <div className="space-y-2 col-span-6">
