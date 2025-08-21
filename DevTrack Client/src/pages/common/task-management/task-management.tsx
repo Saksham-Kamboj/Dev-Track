@@ -168,7 +168,9 @@ export default function TaskManagement() {
               <Filter className="h-5 w-5" />
               Filters
             </CardTitle>
-            <CardDescription>{tasks.length} tasks found</CardDescription>
+            <CardDescription>
+              {tasks.length} / {pagination?.total || 0} tasks found
+            </CardDescription>
           </CardHeader>
           <CardContent className="p-0 w-full">
             <div
@@ -559,7 +561,7 @@ export default function TaskManagement() {
                       <span>•</span>
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3" />
-                        {task.assignedTo.name}
+                        {task.assignedTo?.name || "Unassigned"}
                       </span>
                     </div>
                   </div>

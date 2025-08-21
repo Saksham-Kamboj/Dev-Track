@@ -1,5 +1,5 @@
-import Task from '../models/Task.js';
-import User from '../models/User.js';
+import Task from "../models/Task.js";
+import User from "../models/User.js";
 
 // Create a new task
 export const createTask = async (req, res) => {
@@ -13,14 +13,14 @@ export const createTask = async (req, res) => {
       dueDate,
       estimatedHours,
       tags,
-      assignedTo
+      assignedTo,
     } = req.body;
 
     // Validate input
     if (!title || !description) {
       return res.status(400).json({
         success: false,
-        message: 'Title and description are required'
+        message: "Title and description are required",
       });
     }
 
@@ -30,7 +30,7 @@ export const createTask = async (req, res) => {
       if (!assignedUser) {
         return res.status(400).json({
           success: false,
-          message: 'Assigned user not found'
+          message: "Assigned user not found",
         });
       }
     }
@@ -40,20 +40,22 @@ export const createTask = async (req, res) => {
     let counter = 1;
 
     // Get all existing task IDs and find the highest number
-    const existingTasks = await Task.find({}, { taskId: 1 }).sort({ taskId: -1 });
+    const existingTasks = await Task.find({}, { taskId: 1 }).sort({
+      taskId: -1,
+    });
 
     if (existingTasks.length > 0) {
       // Extract numbers from all task IDs and find the maximum
       const taskNumbers = existingTasks
-        .map(task => {
+        .map((task) => {
           // Check if taskId exists and is a string
-          if (!task.taskId || typeof task.taskId !== 'string') {
+          if (!task.taskId || typeof task.taskId !== "string") {
             return 0;
           }
           const match = task.taskId.match(/TSK-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
-        .filter(num => !isNaN(num) && num > 0);
+        .filter((num) => !isNaN(num) && num > 0);
 
       if (taskNumbers.length > 0) {
         counter = Math.max(...taskNumbers) + 1;
@@ -61,7 +63,7 @@ export const createTask = async (req, res) => {
     }
 
     // Generate the new task ID
-    taskId = `TSK-${String(counter).padStart(4, '0')}`;
+    taskId = `TSK-${String(counter).padStart(4, "0")}`;
 
     // Double-check uniqueness (safety measure)
     const existingTask = await Task.findOne({ taskId });
@@ -75,14 +77,14 @@ export const createTask = async (req, res) => {
       taskId,
       title,
       description,
-      status: status || 'Todo',
-      priority: priority || 'Medium',
-      type: type || 'Task',
+      status: status || "Todo",
+      priority: priority || "Medium",
+      type: type || "Task",
       dueDate: dueDate ? new Date(dueDate) : null,
       estimatedHours: estimatedHours || null,
       tags: tags || [],
       assignedTo: assignedTo || req.user._id,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     };
 
     // Create task with retry mechanism for race conditions
@@ -95,20 +97,25 @@ export const createTask = async (req, res) => {
         task = new Task(taskData);
         await task.save();
         await task.populate([
-          { path: 'assignedTo', select: 'name email role' },
-          { path: 'createdBy', select: 'name email role' }
+          { path: "assignedTo", select: "name email role" },
+          { path: "createdBy", select: "name email role" },
         ]);
         break; // Success, exit retry loop
       } catch (saveError) {
         if (saveError.code === 11000 && retryCount < maxRetries - 1) {
           // Duplicate key error, regenerate task ID and retry
           retryCount++;
-          console.log(`Task ID collision, retrying... (attempt ${retryCount + 1})`);
+          console.log(
+            `Task ID collision, retrying... (attempt ${retryCount + 1})`
+          );
 
           // Generate new task ID with timestamp suffix
           const timestamp = Date.now().toString().slice(-3);
           const newCounter = counter + retryCount;
-          taskData.taskId = `TSK-${String(newCounter).padStart(4, '0')}-${timestamp}`;
+          taskData.taskId = `TSK-${String(newCounter).padStart(
+            4,
+            "0"
+          )}-${timestamp}`;
         } else {
           throw saveError; // Re-throw if not a duplicate key error or max retries reached
         }
@@ -128,43 +135,45 @@ export const createTask = async (req, res) => {
       estimatedHours: task.estimatedHours,
       actualHours: task.actualHours,
       tags: task.tags,
-      assignedTo: task.assignedTo,
-      createdBy: task.createdBy,
+      assignedTo: task.assignedTo || null,
+      createdBy: task.createdBy || null,
       completedAt: task.completedAt,
       createdAt: task.createdAt,
-      updatedAt: task.updatedAt
+      updatedAt: task.updatedAt,
     };
 
     res.status(201).json({
       success: true,
-      message: 'Task created successfully',
-      task: transformedTask
+      message: "Task created successfully",
+      task: transformedTask,
     });
   } catch (error) {
-    console.error('Create task error:', error);
+    console.error("Create task error:", error);
 
     // Handle duplicate key error
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        message: 'Task ID already exists. Please try again.',
-        error: 'DUPLICATE_TASK_ID'
+        message: "Task ID already exists. Please try again.",
+        error: "DUPLICATE_TASK_ID",
       });
     }
 
     // Handle validation errors
-    if (error.name === 'ValidationError') {
-      const validationErrors = Object.values(error.errors).map(err => err.message);
+    if (error.name === "ValidationError") {
+      const validationErrors = Object.values(error.errors).map(
+        (err) => err.message
+      );
       return res.status(400).json({
         success: false,
-        message: 'Validation failed',
-        errors: validationErrors
+        message: "Validation failed",
+        errors: validationErrors,
       });
     }
 
     res.status(500).json({
       success: false,
-      message: 'Server error while creating task'
+      message: "Server error while creating task",
     });
   }
 };
@@ -174,21 +183,21 @@ export const getTasks = async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 10,
+      limit = 12,
       status,
       priority,
       type,
       search,
       assignedTo,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = req.query;
 
     // Build filter query
     const filter = {};
 
     // Role-based filtering
-    if (req.user.role === 'developer') {
+    if (req.user.role === "developer") {
       filter.assignedTo = req.user._id;
     } else if (assignedTo) {
       filter.assignedTo = assignedTo;
@@ -212,11 +221,11 @@ export const getTasks = async (req, res) => {
     // Search filter
     if (search) {
       filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { taskId: { $regex: search, $options: 'i' } },
-        { assignedTo: { $regex: search, $options: 'i' } },
-        { createdBy: { $regex: search, $options: 'i' } }
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { taskId: { $regex: search, $options: "i" } },
+        { assignedTo: { $regex: search, $options: "i" } },
+        { createdBy: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -225,13 +234,13 @@ export const getTasks = async (req, res) => {
 
     // Sort configuration
     const sort = {};
-    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    sort[sortBy] = sortOrder === "desc" ? -1 : 1;
 
     // Execute query
     const tasks = await Task.find(filter)
       .populate([
-        { path: 'assignedTo', select: 'name email role' },
-        { path: 'createdBy', select: 'name email role' }
+        { path: "assignedTo", select: "name email role" },
+        { path: "createdBy", select: "name email role" },
       ])
       .sort(sort)
       .skip(skip)
@@ -241,7 +250,7 @@ export const getTasks = async (req, res) => {
     const total = await Task.countDocuments(filter);
 
     // Transform tasks for frontend
-    const transformedTasks = tasks.map(task => ({
+    const transformedTasks = tasks.map((task) => ({
       id: task._id.toString(),
       taskId: task.taskId,
       title: task.title,
@@ -253,11 +262,11 @@ export const getTasks = async (req, res) => {
       estimatedHours: task.estimatedHours,
       actualHours: task.actualHours,
       tags: task.tags,
-      assignedTo: task.assignedTo,
-      createdBy: task.createdBy,
+      assignedTo: task.assignedTo || null,
+      createdBy: task.createdBy || null,
       completedAt: task.completedAt,
       createdAt: task.createdAt,
-      updatedAt: task.updatedAt
+      updatedAt: task.updatedAt,
     }));
 
     res.json({
@@ -267,14 +276,14 @@ export const getTasks = async (req, res) => {
         page: parseInt(page),
         limit: parseInt(limit),
         total,
-        pages: Math.ceil(total / parseInt(limit))
-      }
+        pages: Math.ceil(total / parseInt(limit)),
+      },
     });
   } catch (error) {
-    console.error('Get tasks error:', error);
+    console.error("Get tasks error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: "Server error",
     });
   }
 };
@@ -293,7 +302,7 @@ export const updateTask = async (req, res) => {
       estimatedHours,
       actualHours,
       tags,
-      assignedTo
+      assignedTo,
     } = req.body;
 
     // Find task
@@ -301,29 +310,30 @@ export const updateTask = async (req, res) => {
     if (!task) {
       return res.status(404).json({
         success: false,
-        message: 'Task not found'
+        message: "Task not found",
       });
     }
 
     // Check permissions
-    const canEdit = req.user.role === 'admin' ||
+    const canEdit =
+      req.user.role === "admin" ||
       task.assignedTo.toString() === req.user._id.toString() ||
       task.createdBy.toString() === req.user._id.toString();
 
     if (!canEdit) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized to update this task'
+        message: "Unauthorized to update this task",
       });
     }
 
     // Validate assignedTo user if provided
-    if (assignedTo && assignedTo !== task.assignedTo.toString()) {
+    if (assignedTo && assignedTo !== task.assignedTo?.toString()) {
       const assignedUser = await User.findById(assignedTo);
       if (!assignedUser) {
         return res.status(400).json({
           success: false,
-          message: 'Assigned user not found'
+          message: "Assigned user not found",
         });
       }
     }
@@ -334,7 +344,8 @@ export const updateTask = async (req, res) => {
     if (status !== undefined) task.status = status;
     if (priority !== undefined) task.priority = priority;
     if (type !== undefined) task.type = type;
-    if (dueDate !== undefined) task.dueDate = dueDate ? new Date(dueDate) : null;
+    if (dueDate !== undefined)
+      task.dueDate = dueDate ? new Date(dueDate) : null;
     if (estimatedHours !== undefined) task.estimatedHours = estimatedHours;
     if (actualHours !== undefined) task.actualHours = actualHours;
     if (tags !== undefined) task.tags = tags;
@@ -342,8 +353,8 @@ export const updateTask = async (req, res) => {
 
     await task.save();
     await task.populate([
-      { path: 'assignedTo', select: 'name email role' },
-      { path: 'createdBy', select: 'name email role' }
+      { path: "assignedTo", select: "name email role" },
+      { path: "createdBy", select: "name email role" },
     ]);
 
     // Transform task for frontend
@@ -359,23 +370,23 @@ export const updateTask = async (req, res) => {
       estimatedHours: task.estimatedHours,
       actualHours: task.actualHours,
       tags: task.tags,
-      assignedTo: task.assignedTo,
-      createdBy: task.createdBy,
+      assignedTo: task.assignedTo || null,
+      createdBy: task.createdBy || null,
       completedAt: task.completedAt,
       createdAt: task.createdAt,
-      updatedAt: task.updatedAt
+      updatedAt: task.updatedAt,
     };
 
     res.json({
       success: true,
-      message: 'Task updated successfully',
-      task: transformedTask
+      message: "Task updated successfully",
+      task: transformedTask,
     });
   } catch (error) {
-    console.error('Update task error:', error);
+    console.error("Update task error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: "Server error",
     });
   }
 };
@@ -390,18 +401,19 @@ export const deleteTask = async (req, res) => {
     if (!task) {
       return res.status(404).json({
         success: false,
-        message: 'Task not found'
+        message: "Task not found",
       });
     }
 
     // Check permissions
-    const canDelete = req.user.role === 'admin' ||
+    const canDelete =
+      req.user.role === "admin" ||
       task.createdBy.toString() === req.user._id.toString();
 
     if (!canDelete) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized to delete this task'
+        message: "Unauthorized to delete this task",
       });
     }
 
@@ -409,13 +421,13 @@ export const deleteTask = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Task deleted successfully'
+      message: "Task deleted successfully",
     });
   } catch (error) {
-    console.error('Delete task error:', error);
+    console.error("Delete task error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: "Server error",
     });
   }
 };
@@ -425,29 +437,31 @@ export const getTaskById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const task = await Task.findById(id)
-      .populate([
-        { path: 'assignedTo', select: 'name email role' },
-        { path: 'createdBy', select: 'name email role' },
-        { path: 'comments.author', select: 'name email role' }
-      ]);
+    const task = await Task.findById(id).populate([
+      { path: "assignedTo", select: "name email role" },
+      { path: "createdBy", select: "name email role" },
+      { path: "comments.author", select: "name email role" },
+    ]);
 
     if (!task) {
       return res.status(404).json({
         success: false,
-        message: 'Task not found'
+        message: "Task not found",
       });
     }
 
     // Check permissions
-    const canView = req.user.role === 'admin' ||
-      task.assignedTo._id.toString() === req.user._id.toString() ||
-      task.createdBy._id.toString() === req.user._id.toString();
+    const canView =
+      req.user.role === "admin" ||
+      (task.assignedTo &&
+        task.assignedTo._id.toString() === req.user._id.toString()) ||
+      (task.createdBy &&
+        task.createdBy._id.toString() === req.user._id.toString());
 
     if (!canView) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized to view this task'
+        message: "Unauthorized to view this task",
       });
     }
 
@@ -464,24 +478,24 @@ export const getTaskById = async (req, res) => {
       estimatedHours: task.estimatedHours,
       actualHours: task.actualHours,
       tags: task.tags,
-      assignedTo: task.assignedTo,
-      createdBy: task.createdBy,
+      assignedTo: task.assignedTo || null,
+      createdBy: task.createdBy || null,
       completedAt: task.completedAt,
       comments: task.comments,
       attachments: task.attachments,
       createdAt: task.createdAt,
-      updatedAt: task.updatedAt
+      updatedAt: task.updatedAt,
     };
 
     res.json({
       success: true,
-      task: transformedTask
+      task: transformedTask,
     });
   } catch (error) {
-    console.error('Get task by ID error:', error);
+    console.error("Get task by ID error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: "Server error",
     });
   }
 };
@@ -492,10 +506,10 @@ export const addComment = async (req, res) => {
     const { id } = req.params;
     const { text } = req.body;
 
-    if (!text || text.trim() === '') {
+    if (!text || text.trim() === "") {
       return res.status(400).json({
         success: false,
-        message: 'Comment text is required'
+        message: "Comment text is required",
       });
     }
 
@@ -503,40 +517,42 @@ export const addComment = async (req, res) => {
     if (!task) {
       return res.status(404).json({
         success: false,
-        message: 'Task not found'
+        message: "Task not found",
       });
     }
 
     // Check permissions
-    const canComment = req.user.role === 'admin' ||
-      task.assignedTo.toString() === req.user._id.toString() ||
-      task.createdBy.toString() === req.user._id.toString();
+    const canComment =
+      req.user.role === "admin" ||
+      (task.assignedTo &&
+        task.assignedTo.toString() === req.user._id.toString()) ||
+      (task.createdBy && task.createdBy.toString() === req.user._id.toString());
 
     if (!canComment) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized to comment on this task'
+        message: "Unauthorized to comment on this task",
       });
     }
 
     task.comments.push({
       text: text.trim(),
-      author: req.user._id
+      author: req.user._id,
     });
 
     await task.save();
-    await task.populate('comments.author', 'name email role');
+    await task.populate("comments.author", "name email role");
 
     res.json({
       success: true,
-      message: 'Comment added successfully',
-      comment: task.comments[task.comments.length - 1]
+      message: "Comment added successfully",
+      comment: task.comments[task.comments.length - 1],
     });
   } catch (error) {
-    console.error('Add comment error:', error);
+    console.error("Add comment error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: "Server error",
     });
   }
 };
@@ -545,26 +561,28 @@ export const addComment = async (req, res) => {
 export const getNextTaskId = async () => {
   try {
     // Get all existing task IDs and find the highest number
-    const existingTasks = await Task.find({}, { taskId: 1 }).sort({ taskId: -1 });
+    const existingTasks = await Task.find({}, { taskId: 1 }).sort({
+      taskId: -1,
+    });
     let counter = 1;
 
     if (existingTasks.length > 0) {
       // Extract numbers from all task IDs and find the maximum
       const taskNumbers = existingTasks
-        .map(task => {
+        .map((task) => {
           const match = task.taskId.match(/TSK-(\d+)/);
           return match ? parseInt(match[1]) : 0;
         })
-        .filter(num => !isNaN(num));
+        .filter((num) => !isNaN(num));
 
       if (taskNumbers.length > 0) {
         counter = Math.max(...taskNumbers) + 1;
       }
     }
 
-    return `TSK-${String(counter).padStart(4, '0')}`;
+    return `TSK-${String(counter).padStart(4, "0")}`;
   } catch (error) {
-    console.error('Error generating task ID:', error);
+    console.error("Error generating task ID:", error);
     // Fallback to timestamp-based ID
     const timestamp = Date.now().toString().slice(-4);
     return `TSK-${timestamp}`;
@@ -577,7 +595,7 @@ export const isTaskIdUnique = async (taskId) => {
     const existingTask = await Task.findOne({ taskId });
     return !existingTask;
   } catch (error) {
-    console.error('Error checking task ID uniqueness:', error);
+    console.error("Error checking task ID uniqueness:", error);
     return false;
   }
 };
