@@ -1,6 +1,6 @@
-import { BaseApiService } from '../base-api.service';
-import { API_ROUTES } from '@/constants';
-import type { User } from '@/types';
+import { BaseApiService } from "../base-api.service";
+import { API_ROUTES } from "@/constants";
+import type { ProfileData } from "@/types/profile/profile.types";
 
 /**
  * Profile service for handling user profile-related API calls
@@ -25,11 +25,14 @@ export class ProfileService extends BaseApiService {
   /**
    * Get user profile
    */
-  async getProfile(): Promise<User> {
+  async getProfile(): Promise<ProfileData> {
     try {
-      return await this.get<User>(API_ROUTES.COMMON.PROFILE);
+      const response = await this.get<{ success: boolean; user: ProfileData }>(
+        API_ROUTES.COMMON.PROFILE
+      );
+      return response.user;
     } catch (error) {
-      console.error('Get profile error:', error);
+      console.error("Get profile error:", error);
       throw error;
     }
   }
@@ -37,14 +40,16 @@ export class ProfileService extends BaseApiService {
   /**
    * Update user profile
    */
-  async updateProfile(profileData: Partial<User>): Promise<{ success: boolean; message: string; user: User }> {
+  async updateProfile(
+    profileData: Partial<ProfileData>
+  ): Promise<{ success: boolean; message: string; user: ProfileData }> {
     try {
-      return await this.put<{ success: boolean; message: string; user: User }, Partial<User>>(
-        API_ROUTES.COMMON.EDIT_PROFILE,
-        profileData
-      );
+      return await this.put<
+        { success: boolean; message: string; user: ProfileData },
+        Partial<ProfileData>
+      >(API_ROUTES.COMMON.EDIT_PROFILE, profileData);
     } catch (error) {
-      console.error('Update profile error:', error);
+      console.error("Update profile error:", error);
       throw error;
     }
   }
@@ -58,12 +63,12 @@ export class ProfileService extends BaseApiService {
     confirmPassword: string;
   }): Promise<{ success: boolean; message: string }> {
     try {
-      return await this.post<{ success: boolean; message: string }, typeof passwordData>(
-        `${API_ROUTES.COMMON.PROFILE}/change-password`,
-        passwordData
-      );
+      return await this.post<
+        { success: boolean; message: string },
+        typeof passwordData
+      >(`${API_ROUTES.COMMON.PROFILE}/change-password`, passwordData);
     } catch (error) {
-      console.error('Change password error:', error);
+      console.error("Change password error:", error);
       throw error;
     }
   }
@@ -71,19 +76,20 @@ export class ProfileService extends BaseApiService {
   /**
    * Upload profile picture
    */
-  async uploadProfilePicture(formData: FormData): Promise<{ success: boolean; message: string; imageUrl: string }> {
+  async uploadProfilePicture(
+    formData: FormData
+  ): Promise<{ success: boolean; message: string; imageUrl: string }> {
     try {
-      return await this.post<{ success: boolean; message: string; imageUrl: string }, FormData>(
-        `${API_ROUTES.COMMON.PROFILE}/upload-picture`,
-        formData,
-        {
-          headers: {
-            // Don't set Content-Type for FormData, let browser set it with boundary
-          }
-        }
-      );
+      return await this.post<
+        { success: boolean; message: string; imageUrl: string },
+        FormData
+      >(`${API_ROUTES.COMMON.PROFILE}/upload-picture`, formData, {
+        headers: {
+          // Don't set Content-Type for FormData, let browser set it with boundary
+        },
+      });
     } catch (error) {
-      console.error('Upload profile picture error:', error);
+      console.error("Upload profile picture error:", error);
       throw error;
     }
   }
@@ -97,7 +103,7 @@ export class ProfileService extends BaseApiService {
         `${API_ROUTES.COMMON.PROFILE}/delete-picture`
       );
     } catch (error) {
-      console.error('Delete profile picture error:', error);
+      console.error("Delete profile picture error:", error);
       throw error;
     }
   }

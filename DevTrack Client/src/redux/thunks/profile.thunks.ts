@@ -1,6 +1,6 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ProfileService } from '@/services';
-import type { User } from '@/types';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { ProfileService } from "@/services";
+import type { ProfileData } from "@/types/profile/profile.types";
 
 // Get ProfileService instance
 const profileService = ProfileService.getInstance();
@@ -9,17 +9,18 @@ const profileService = ProfileService.getInstance();
  * Async thunk for getting user profile
  */
 export const getUserProfile = createAsyncThunk<
-  User,
+  ProfileData,
   void,
   {
     rejectValue: string;
   }
->('profile/getUserProfile', async (_, { rejectWithValue }) => {
+>("profile/getUserProfile", async (_, { rejectWithValue }) => {
   try {
     const response = await profileService.getProfile();
     return response;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch profile';
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to fetch profile";
     return rejectWithValue(errorMessage);
   }
 });
@@ -28,17 +29,18 @@ export const getUserProfile = createAsyncThunk<
  * Async thunk for updating user profile
  */
 export const updateUserProfile = createAsyncThunk<
-  { success: boolean; message: string; user: User },
-  Partial<User>,
+  { success: boolean; message: string; user: ProfileData },
+  Partial<ProfileData>,
   {
     rejectValue: string;
   }
->('profile/updateUserProfile', async (profileData, { rejectWithValue }) => {
+>("profile/updateUserProfile", async (profileData, { rejectWithValue }) => {
   try {
     const response = await profileService.updateProfile(profileData);
     return response;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to update profile";
     return rejectWithValue(errorMessage);
   }
 });
@@ -56,12 +58,13 @@ export const changePassword = createAsyncThunk<
   {
     rejectValue: string;
   }
->('profile/changePassword', async (passwordData, { rejectWithValue }) => {
+>("profile/changePassword", async (passwordData, { rejectWithValue }) => {
   try {
     const response = await profileService.changePassword(passwordData);
     return response;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to change password';
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to change password";
     return rejectWithValue(errorMessage);
   }
 });
@@ -75,12 +78,15 @@ export const uploadProfilePicture = createAsyncThunk<
   {
     rejectValue: string;
   }
->('profile/uploadProfilePicture', async (formData, { rejectWithValue }) => {
+>("profile/uploadProfilePicture", async (formData, { rejectWithValue }) => {
   try {
     const response = await profileService.uploadProfilePicture(formData);
     return response;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to upload profile picture';
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Failed to upload profile picture";
     return rejectWithValue(errorMessage);
   }
 });
@@ -94,12 +100,15 @@ export const deleteProfilePicture = createAsyncThunk<
   {
     rejectValue: string;
   }
->('profile/deleteProfilePicture', async (_, { rejectWithValue }) => {
+>("profile/deleteProfilePicture", async (_, { rejectWithValue }) => {
   try {
     const response = await profileService.deleteProfilePicture();
     return response;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to delete profile picture';
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Failed to delete profile picture";
     return rejectWithValue(errorMessage);
   }
 });

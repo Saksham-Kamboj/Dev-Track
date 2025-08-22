@@ -5,6 +5,7 @@ import adminTaskReducer from "./slices/adminTaskSlice";
 import developerReducer from "./slices/developerSlice";
 import tableReducer from "./slices/tableSlice";
 import taskReducer from "./slices/taskSlice";
+import profileReducer from "./slices/profileSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     developer: developerReducer,
     table: tableReducer,
     tasks: taskReducer,
+    profile: profileReducer,
   },
 });
 
