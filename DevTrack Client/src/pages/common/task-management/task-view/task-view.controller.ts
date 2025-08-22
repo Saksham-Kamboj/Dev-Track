@@ -40,8 +40,13 @@ export const useTaskViewController = (): TaskViewControllerResponse => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const { currentTask, loading, error } = useAppSelector((state) => state.tasks)
+  const { user } = useAppSelector((state) => state.auth)
 
   const [taskNotFound, setTaskNotFound] = useState(false)
+
+  // Role-based properties
+  const userRole = user?.role || 'developer'
+  const isAdmin = userRole === 'admin'
 
   // Load task data when component mounts
   useEffect(() => {
@@ -54,16 +59,24 @@ export const useTaskViewController = (): TaskViewControllerResponse => {
     }
   }, [dispatch, id])
 
-  // Navigation handlers
+  // Navigation handlers - role-based routing
   const handleBack = useCallback(() => {
-    navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
-  }, [navigate])
+    if (isAdmin) {
+      navigate(PAGE_ROUTES.ADMIN.TASK.ALL)
+    } else {
+      navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
+    }
+  }, [navigate, isAdmin])
 
   const handleEdit = useCallback(() => {
     if (currentTask) {
-      navigate(PAGE_ROUTES.DEVELOPER.TASK.EDIT.replace(":id", currentTask.id))
+      if (isAdmin) {
+        navigate(PAGE_ROUTES.ADMIN.TASK.EDIT.replace(":id", currentTask.id))
+      } else {
+        navigate(PAGE_ROUTES.DEVELOPER.TASK.EDIT.replace(":id", currentTask.id))
+      }
     }
-  }, [navigate, currentTask])
+  }, [navigate, currentTask, isAdmin])
 
   const handleDelete = useCallback(async () => {
     if (!currentTask) return
@@ -77,7 +90,11 @@ export const useTaskViewController = (): TaskViewControllerResponse => {
         const result = await dispatch(deleteTask(currentTask.id))
         if (deleteTask.fulfilled.match(result)) {
           toast.success('Task deleted successfully!')
-          navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
+          if (isAdmin) {
+            navigate(PAGE_ROUTES.ADMIN.TASK.ALL)
+          } else {
+            navigate(PAGE_ROUTES.DEVELOPER.TASK.ALL)
+          }
         } else {
           toast.error('Failed to delete task')
         }
@@ -86,15 +103,19 @@ export const useTaskViewController = (): TaskViewControllerResponse => {
         toast.error('Failed to delete task')
       }
     }
-  }, [dispatch, currentTask, navigate])
+  }, [dispatch, currentTask, navigate, isAdmin])
 
   const handleDuplicate = useCallback(() => {
     if (currentTask) {
       // Navigate to create page with pre-filled data (could be implemented later)
-      navigate(PAGE_ROUTES.DEVELOPER.TASK.UPLOAD)
+      if (isAdmin) {
+        navigate(PAGE_ROUTES.ADMIN.TASK.UPLOAD)
+      } else {
+        navigate(PAGE_ROUTES.DEVELOPER.TASK.UPLOAD)
+      }
       toast.info('Duplicate functionality coming soon!')
     }
-  }, [navigate, currentTask])
+  }, [navigate, currentTask, isAdmin])
 
   // Utility functions for styling and formatting
   const getStatusIconType = useCallback((status: string): string => {

@@ -1,20 +1,32 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2 } from "lucide-react"
-import { useNavigate } from "react-router-dom"
-import { PAGE_ROUTES } from "@/constants"
-import { useEditUserController } from "./edit-user.controller"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { PAGE_ROUTES } from "@/constants";
+import { useEditUserController } from "./edit-user.controller";
 
 const EditUser = () => {
-  const navigate = useNavigate()
-  const { getters, handlers } = useEditUserController()
+  const navigate = useNavigate();
+  const { getters, handlers } = useEditUserController();
 
   const handleBack = () => {
-    navigate(PAGE_ROUTES.ADMIN.USER_MANAGEMENT)
-  }
+    navigate(PAGE_ROUTES.ADMIN.USER_MANAGEMENT);
+  };
 
   if (getters.isLoading) {
     return (
@@ -24,7 +36,7 @@ const EditUser = () => {
           <span>Loading user data...</span>
         </div>
       </div>
-    )
+    );
   }
 
   if (!getters.user) {
@@ -32,13 +44,15 @@ const EditUser = () => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">User Not Found</h2>
-          <p className="text-muted-foreground mb-4">The user you're looking for doesn't exist.</p>
+          <p className="text-muted-foreground mb-4">
+            The user you're looking for doesn't exist.
+          </p>
           <Button onClick={handleBack} variant="outline">
             Back to User Management
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -46,7 +60,9 @@ const EditUser = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Edit User</h1>
-        <p className="text-muted-foreground">Update user information and account status</p>
+        <p className="text-muted-foreground">
+          Update user information and account status
+        </p>
       </div>
 
       {/* Edit User Form */}
@@ -58,7 +74,11 @@ const EditUser = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handlers.onSubmit} className="space-y-6" autoComplete="off">
+          <form
+            onSubmit={handlers.onSubmit}
+            className="space-y-6"
+            autoComplete="off"
+          >
             {/* Personal Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -67,13 +87,17 @@ const EditUser = () => {
                   id="name"
                   name="name"
                   value={getters.formData.name}
-                  onChange={(e) => handlers.onInputChange("name", e.target.value)}
+                  onChange={(e) =>
+                    handlers.onInputChange("name", e.target.value)
+                  }
                   placeholder="Enter full name"
                   required
                   autoComplete="off"
                 />
                 {getters.errors.name && (
-                  <p className="text-sm text-destructive">{getters.errors.name.message}</p>
+                  <p className="text-sm text-destructive">
+                    {getters.errors.name.message}
+                  </p>
                 )}
               </div>
 
@@ -84,20 +108,24 @@ const EditUser = () => {
                   name="email"
                   type="email"
                   value={getters.formData.email}
-                  onChange={(e) => handlers.onInputChange("email", e.target.value)}
+                  onChange={(e) =>
+                    handlers.onInputChange("email", e.target.value)
+                  }
                   placeholder="Enter email address"
                   required
                   autoComplete="new-email"
                   autoCorrect="off"
                   autoCapitalize="off"
                   style={{
-                    backgroundColor: 'transparent !important',
-                    backgroundImage: 'none !important',
-                    transition: 'background-color 5000s ease-in-out 0s'
+                    backgroundColor: "transparent !important",
+                    backgroundImage: "none !important",
+                    transition: "background-color 5000s ease-in-out 0s",
                   }}
                 />
                 {getters.errors.email && (
-                  <p className="text-sm text-destructive">{getters.errors.email.message}</p>
+                  <p className="text-sm text-destructive">
+                    {getters.errors.email.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -110,12 +138,16 @@ const EditUser = () => {
                   name="phone"
                   type="tel"
                   value={getters.formData.phone || ""}
-                  onChange={(e) => handlers.onInputChange("phone", e.target.value)}
+                  onChange={(e) =>
+                    handlers.onInputChange("phone", e.target.value)
+                  }
                   placeholder="Enter phone number"
                   autoComplete="off"
                 />
                 {getters.errors.phone && (
-                  <p className="text-sm text-destructive">{getters.errors.phone.message}</p>
+                  <p className="text-sm text-destructive">
+                    {getters.errors.phone.message}
+                  </p>
                 )}
               </div>
 
@@ -125,9 +157,14 @@ const EditUser = () => {
                   value={getters.formData.role || ""}
                   onValueChange={handlers.onRoleChange}
                   required
+                  disabled={getters.isLoading}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select user role" />
+                    <SelectValue
+                      placeholder={
+                        getters.isLoading ? "Loading..." : "Select user role"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Admin</SelectItem>
@@ -135,7 +172,9 @@ const EditUser = () => {
                   </SelectContent>
                 </Select>
                 {getters.errors.role && (
-                  <p className="text-sm text-destructive">{getters.errors.role.message}</p>
+                  <p className="text-sm text-destructive">
+                    {getters.errors.role.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -168,7 +207,9 @@ const EditUser = () => {
                   </SelectContent>
                 </Select>
                 {getters.errors.status && (
-                  <p className="text-sm text-destructive">{getters.errors.status.message}</p>
+                  <p className="text-sm text-destructive">
+                    {getters.errors.status.message}
+                  </p>
                 )}
                 <p className="text-sm text-muted-foreground">
                   Inactive users cannot log in to the system
@@ -178,11 +219,7 @@ const EditUser = () => {
 
             {/* Form Actions */}
             <div className="flex justify-end space-x-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBack}
-              >
+              <Button type="button" variant="outline" onClick={handleBack}>
                 Cancel
               </Button>
               <Button
@@ -197,7 +234,7 @@ const EditUser = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default EditUser
+export default EditUser;

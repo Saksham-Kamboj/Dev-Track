@@ -51,6 +51,8 @@ const TaskManagement = lazy(() =>
   import(/* webpackChunkName: "task-management" */ "@/pages/common/task-management/task-management")
 );
 
+
+
 const TaskCreate = lazy(() =>
   import(/* webpackChunkName: "task-create" */ "@/pages/common/task-management/task-create/task-create")
 );
@@ -138,22 +140,22 @@ const createAdminRoutes = () => [
   />,
   <Route
     key="admin-task-management"
-    path="/task-management"
+    path={PAGE_ROUTES.ADMIN.TASK.ALL}
     element={createProtectedRoute(TaskManagement)}
   />,
   <Route
     key="admin-task-create"
-    path="/tasks/create"
+    path={PAGE_ROUTES.ADMIN.TASK.UPLOAD}
     element={createProtectedRoute(TaskCreate)}
   />,
   <Route
     key="admin-task-edit"
-    path="/tasks/edit/:id"
+    path={PAGE_ROUTES.ADMIN.TASK.EDIT}
     element={createProtectedRoute(TaskEdit)}
   />,
   <Route
     key="admin-task-view"
-    path="/tasks/:id"
+    path={PAGE_ROUTES.ADMIN.TASK.VIEW}
     element={createProtectedRoute(TaskView)}
   />,
   ...createCommonRoutes(),

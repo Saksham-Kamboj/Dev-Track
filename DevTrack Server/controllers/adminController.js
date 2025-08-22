@@ -23,16 +23,8 @@ export const getDashboard = async (req, res) => {
   }
 };
 
-// Get all tasks
-export const getAllTasks = async (req, res) => {
-  try {
-    const tasks = await Task.find().populate('developer', 'name email');
-    res.json({ tasks });
-  } catch (error) {
-    console.error('Get all tasks error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+// Get all tasks - Use common task API instead
+// This function is removed - use /api/tasks endpoint which already has role-based logic
 
 // Get all users (both admin and developer)
 export const getAllUsers = async (req, res) => {
@@ -293,6 +285,32 @@ export const getUserById = async (req, res) => {
     });
   } catch (error) {
     console.error('Get user by ID error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// Get all developers (for task assignment)
+export const getDevelopers = async (req, res) => {
+  try {
+    const developers = await User.find({ role: 'developer', status: 'active' })
+      .select('name email')
+      .sort({ name: 1 });
+
+    const formattedDevelopers = developers.map(dev => ({
+      id: dev._id,
+      name: dev.name,
+      email: dev.email
+    }));
+
+    res.json({
+      success: true,
+      developers: formattedDevelopers
+    });
+  } catch (error) {
+    console.error('Get developers error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'

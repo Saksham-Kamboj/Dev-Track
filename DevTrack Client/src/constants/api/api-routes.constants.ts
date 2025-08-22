@@ -21,8 +21,8 @@ export const API_ROUTES = {
       UPDATE: `${API_BASE_URL}/admin/users/:id`,
       DELETE: `${API_BASE_URL}/admin/users/:id`,
     },
+
     DEVELOPERS: `${API_BASE_URL}/admin/developers`,
-    TASKS: `${API_BASE_URL}/admin/tasks`,
   },
 
 
@@ -38,6 +38,16 @@ export const API_ROUTES = {
       UPDATE: `${API_BASE_URL}/developer/tasks/:id`,
       DELETE: `${API_BASE_URL}/developer/tasks/:id`,
     },
+  },
+
+  // Common task routes (used by both admin and developer with role-based permissions)
+  TASKS: {
+    BASE: `${API_BASE_URL}/tasks`,
+    GET_ALL: `${API_BASE_URL}/tasks`,
+    GET_BY_ID: `${API_BASE_URL}/tasks/:id`,
+    CREATE: `${API_BASE_URL}/tasks`,
+    UPDATE: `${API_BASE_URL}/tasks/:id`,
+    DELETE: `${API_BASE_URL}/tasks/:id`,
   },
 
   // Common api routes

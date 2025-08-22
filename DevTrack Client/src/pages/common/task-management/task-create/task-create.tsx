@@ -15,7 +15,7 @@ import { useTaskCreateController } from "./task-create.controller"
 
 export default function TaskCreate() {
   const { getters, handlers } = useTaskCreateController()
-  const { formData, loading, dueDate, newTag, isFormValid, isFormDirty } = getters
+  const { formData, loading, dueDate, newTag, isFormValid, isFormDirty, isAdmin, developers } = getters
   const { onAddTag, onCancel, onDueDateChange, onInputChange, onNewTagChange, onRemoveTag, onSubmit, onReset } = handlers
 
   return (
@@ -207,6 +207,29 @@ export default function TaskCreate() {
                     </PopoverContent>
                   </Popover>
                 </div>
+
+                {/* Assigned To - Admin Only */}
+                {isAdmin && (
+                  <div className="space-y-2 col-span-12">
+                    <Label>Assign To</Label>
+                    <Select
+                      value={formData.assignedTo || "unassigned"}
+                      onValueChange={(value) => onInputChange("assignedTo", value === "unassigned" ? undefined : value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a developer (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {developers.map((dev) => (
+                          <SelectItem key={dev.id} value={dev.id}>
+                            {dev.name} ({dev.email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

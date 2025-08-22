@@ -1,7 +1,7 @@
 import express from 'express';
 import {
   getDashboard,
-  getAllTasks,
+  getDevelopers,
   getAllUsers,
   createUser,
   updateUser,
@@ -18,8 +18,8 @@ router.use(authenticateToken, requireAdmin);
 // GET /api/admin/dashboard
 router.get('/dashboard', getDashboard);
 
-// GET /api/admin/tasks
-router.get('/tasks', getAllTasks);
+// GET /api/admin/developers - for task assignment
+router.get('/developers', getDevelopers);
 
 // User management routes
 // GET /api/admin/users
